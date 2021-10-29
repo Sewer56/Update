@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Submodules\Sewer56.DeltaPatchGenerators\Sewer56.DeltaPatchGenerator.Lib\Sewer56.DeltaPatchGenerator.Lib.csproj" />
+    <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Compressors\" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>preview</LangVersion>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" Version="5.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Submodules\Sewer56.DeltaPatchGenerators\Sewer56.DeltaPatchGenerator.Lib\Sewer56.DeltaPatchGenerator.Lib.csproj" />
+    <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
+    <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+    <Folder Include="Extractors\" />
+  </ItemGroup>
+
+</Project>
