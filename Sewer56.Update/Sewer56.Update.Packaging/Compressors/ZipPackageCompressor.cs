@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Threading;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 
 namespace Sewer56.Update.Packaging.Compressors;
@@ -15,18 +16,23 @@ namespace Sewer56.Update.Packaging.Compressors;
 public class ZipPackageCompressor : IPackageCompressor
 {
     /// <inheritdoc />
-    public Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public async Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        // TODO: Make this actually async.
-        using var zipFile = ZipFile.Open(destPath, ZipArchiveMode.Update);
+        await using var zipStream = new FileStream(destPath, FileMode.Create);
+        using var zipFile  = new ZipArchive(zipStream, ZipArchiveMode.Update);
+        var progressSlicer = new ProgressSlicer(progress);
         for (var x = 0; x < relativeFilePaths.Count; x++)
         {
-            progress?.Report((float) x / relativeFilePaths.Count);
-            var relativePath = relativeFilePaths[x];
-            zipFile.CreateEntryFromFile(Paths.AppendRelativePath(relativePath, baseDirectory), relativePath, CompressionLevel.Optimal);
+            var progressForFile = progressSlicer.Slice((float)x / relativeFilePaths.Count);
+            var relativePath    = relativeFilePaths[x];
+
+            var entry = zipFile.CreateEntry(relativePath, CompressionLevel.Optimal);
+            await using var sourceStream = File.Open(Paths.AppendRelativePath(relativePath, baseDirectory), FileMode.Open, FileAccess.Read);
+            await using var entryStream  = entry.Open();
+
+            await sourceStream.CopyToAsyncEx(entryStream, 65536, progressForFile, cancellationToken);
         }
 
         progress?.Report(1);
-        return Task.CompletedTask;
     }
 }
