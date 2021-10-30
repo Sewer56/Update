@@ -58,7 +58,6 @@ public class LocalPackageResolverTests
         // Act
         var resolver = new LocalPackageResolver(OutputFolder);
         await resolver.InitializeAsync();
-
         var versions = await resolver.GetPackageVersionsAsync();
 
         // Assert

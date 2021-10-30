@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Tests", "Sew
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Tests.Dummy", "Sewer56.Update.Tests.Dummy\Sewer56.Update.Tests.Dummy.csproj", "{E7119C53-185D-4A96-AD6C-149609B02292}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Misc", "Sewer56.Update.Misc\Sewer56.Update.Misc.csproj", "{F65789A5-EBAF-4CE7-956D-AFD188635C12}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Misc", "Sewer56.Update.Misc\Sewer56.Update.Misc.csproj", "{F65789A5-EBAF-4CE7-956D-AFD188635C12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Tool", "Sewer56.Update.Tool\Sewer56.Update.Tool.csproj", "{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{F65789A5-EBAF-4CE7-956D-AFD188635C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F65789A5-EBAF-4CE7-956D-AFD188635C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F65789A5-EBAF-4CE7-956D-AFD188635C12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
