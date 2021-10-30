@@ -40,6 +40,7 @@ internal class Program
     {
         var copyPackages  = TryParseCsv<CopyPackage>(options.CopyPackagesPath);
         var deltaPackages = TryParseCsv<DeltaPackage>(options.DeltaPackagesPath);
+        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
         Directory.CreateDirectory(options.OutputPath);
 
         // Arrange
@@ -49,7 +50,8 @@ internal class Program
             builder.AddCopyPackage(new CopyBuilderItem<Empty>()
             {
                 FolderPath = copyPackage.FolderPath,
-                Version = copyPackage.Version
+                Version = copyPackage.Version,
+                IgnoreRegexes = ignoreRegexes
             });
         }
 
@@ -60,7 +62,8 @@ internal class Program
                 FolderPath = deltaPackage.CurrentVersionFolder,
                 PreviousVersionFolder = deltaPackage.LastVersionFolder,
                 Version = deltaPackage.CurrentVersion,
-                PreviousVersion = deltaPackage.LastVersion
+                PreviousVersion = deltaPackage.LastVersion,
+                IgnoreRegexes = ignoreRegexes
             });
         }
 

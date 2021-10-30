@@ -21,6 +21,9 @@ internal class CreateOptions
 
     [Option(Required = false, HelpText = "The name for the packages as downloaded by the user.", Default = "Package")]
     public string PackageName { get; internal set; }
+
+    [Option(Required = false, HelpText = "Path to a text file containing a list of regular expressions (1 expression per line) of files to be ignored in the packages.")]
+    public string IgnoreRegexesPath { get; internal set; }
 }
 
 
