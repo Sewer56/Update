@@ -4,11 +4,15 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using FluentAssertions.Extensions;
 using NuGet.Versioning;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Enums;
+using Sewer56.Update.Packaging.Extractors;
 using Sewer56.Update.Packaging.Structures;
+using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
+using Sewer56.Update.Resolvers;
 using Sewer56.Update.Structures;
 using Sewer56.Update.Tests.Dummy;
 using Sewer56.Update.Tests.Internal;
@@ -19,7 +23,8 @@ namespace Sewer56.Update.Tests;
 
 public class UpdateManagerTests : IDisposable
 {
-    private string TempDirPath { get; } = Utilities.MakeUniqueFolder(Directory.GetCurrentDirectory());
+    private static string TempDirPath  = Utilities.MakeUniqueFolder(Directory.GetCurrentDirectory());
+    private string OutputFolder = Path.Combine(TempDirPath, "Output");
 
     public UpdateManagerTests() => IOEx.TryEmptyDirectory(TempDirPath);
 
@@ -119,6 +124,42 @@ public class UpdateManagerTests : IDisposable
         preparedUpdateVersions.Should().BeEquivalentTo(expectedPreparedUpdateVersions);
     }
 
+    [Fact]
+    public async Task TryGetPackageMetadata_ReturnsMetadataIfAvailable()
+    {
+        const string version = "1.0";
+
+        // Arrange
+        await PrepareDummyPackage();
+        var dummyUpdatee = new ItemMetadata(NuGetVersion.Parse("0.0"), Directory.GetCurrentDirectory());
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(dummyUpdatee, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+        await updateManager.PrepareUpdateAsync(NuGetVersion.Parse(version));
+
+        // Act
+        var metadata = await updateManager.TryGetPackageMetadataAsync(NuGetVersion.Parse(version));
+
+        // Arrange
+        metadata.Should().NotBeNull();
+        version.Should().BeEquivalentTo(metadata.Version);
+    }
+
+    [Fact]
+    public async Task TryGetPackageMetadata_DoesNotReturnIfNotPrepared()
+    {
+        const string version = "1.0";
+
+        // Arrange
+        await PrepareDummyPackage();
+        var dummyUpdatee = new ItemMetadata(NuGetVersion.Parse("0.0"), Directory.GetCurrentDirectory());
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(dummyUpdatee, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+
+        // Act
+        var metadata = await updateManager.TryGetPackageMetadataAsync(NuGetVersion.Parse(version));
+
+        // Arrange
+        metadata.Should().BeNull();
+    }
+
 #if !DEBUG
     [Theory(Timeout = 10000)]
 #else
@@ -152,5 +193,21 @@ public class UpdateManagerTests : IDisposable
         // Assert (version after update)
         var newVersion = Version.Parse(await dummy.RunDummyAsync(Program.Command_Version));
         newVersion.Should().Be(expectedFinalVersion);
+    }
+
+    private async Task PrepareDummyPackage()
+    {
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
     }
 }

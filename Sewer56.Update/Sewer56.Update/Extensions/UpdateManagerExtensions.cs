@@ -22,7 +22,7 @@ public static class UpdateManagerExtensions
         var result = await manager.CheckForUpdatesAsync(cancellationToken);
         if (!result.CanUpdate || result.LastVersion == null)
             return false;
-
+        
         // Prepare
         await manager.PrepareUpdateAsync(result.LastVersion, progress, cancellationToken);
 

@@ -10,10 +10,10 @@ namespace Sewer56.Update.Tool;
 [Verb("create", HelpText = "Creates a new release.")]
 internal class CreateOptions
 {
-    [Option(Required = false, HelpText = "Path to a text file with all packages to be copied.")]
+    [Option(Required = false, HelpText = "Path to a CSV file with all packages to be copied. Entry should have format: \"PathToFolder,Version\"")]
     public string CopyPackagesPath { get; internal set; }
 
-    [Option(Required = false, HelpText = "Path to a text file with all packages to be delta patched.")]
+    [Option(Required = false, HelpText = "Path to a CSV file with all packages to be delta patched. Entry should have format: \"PathToCurrentVersionFolder,CurrentVersion,PathToPreviousVersionFolder,PreviousVersion\"")]
     public string DeltaPackagesPath { get; internal set; }
 
     [Option(Required = true, HelpText = "The folder where to save the new release.")]
