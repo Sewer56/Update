@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Compressors;
 using Sewer56.Update.Packaging.Enums;
@@ -159,8 +160,8 @@ public class ReleaseBuilder<T> where T : class
     {
         return metadata.Type switch
         {
-            PackageType.Copy  => metadata.Hashes.Files.Select(x => x.RelativePath).ToList(),
-            PackageType.Delta => metadata.DeltaData!.PatchData.ToFileHashSet().Files.Select(x => x.RelativePath).ToList(),
+            PackageType.Copy   => metadata.Hashes!.Files.Select(x => x.RelativePath).ToList(),
+            PackageType.Delta  => metadata.DeltaData!.PatchData.ToFileHashSet().Files.Select(x => x.RelativePath).ToList(),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

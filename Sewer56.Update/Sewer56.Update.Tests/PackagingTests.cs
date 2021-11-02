@@ -151,6 +151,19 @@ public class PackagingTests
     }
 
     [Fact]
+    public async Task LegacyPackage_CanApplyToFolder()
+    {
+        // Act
+        IOEx.CopyDirectory(Assets.ManyFileFolderOriginal, PackageFolder); // Manifest-less
+
+        var metadata = await Package<Empty>.ReadOrCreateLegacyMetadataFromDirectoryAsync(PackageFolder);
+        metadata.Apply(ResultFolder);
+
+        // Assert
+        Assert.True(metadata.Verify(out _, out _, ResultFolder));
+    }
+
+    [Fact]
     public async Task DeltaPackage_CanApplyToFolder()
     {
         // Act

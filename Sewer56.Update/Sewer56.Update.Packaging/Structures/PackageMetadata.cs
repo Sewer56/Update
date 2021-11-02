@@ -43,7 +43,7 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     /// <summary>
     /// Contains a list of all hashes in this package.
     /// </summary>
-    public FileHashSet Hashes { get; set; }
+    public FileHashSet? Hashes { get; set; }
 
     /// <summary>
     /// Regex patterns for files to be ignored during cleanup.
@@ -80,6 +80,13 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     /// <param name="sourceDirectory">The source directory. If not specified, defaults to <see cref="FolderPath"/></param>
     public bool Verify(out List<string> missingFiles, out List<string> mismatchFiles, string? sourceDirectory = null)
     {
+        if (Hashes == null)
+        {
+            mismatchFiles = new List<string>();
+            missingFiles  = new List<string>();
+            return true;
+        }
+
         sourceDirectory ??= FolderPath;
         return HashSet.Verify(Hashes, sourceDirectory, out missingFiles, out mismatchFiles);
     }
@@ -116,6 +123,9 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
             case PackageType.Copy:
                 Apply_Copy(targetDirectory, sourceDirectory!);
                 break;
+            case PackageType.Legacy:
+                Apply_Legacy(targetDirectory, sourceDirectory!);
+                break;
             case PackageType.Delta:
                 Apply_Delta(targetDirectory, sourceDirectory!);
                 break;
@@ -124,18 +134,23 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
         }
 
         // Cleanup.
-        var compiledIgnoreRegexes = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
-        HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes));
+        if (Hashes != null)
+        {
+            var compiledIgnoreRegexes = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
+            HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes));
+        }
     }
 
-    private void Apply_Copy(string targetDirectory, string sourceDirectory) => IOEx.CopyDirectory(sourceDirectory, targetDirectory);
+    private void Apply_Legacy(string targetDirectory, string sourceDirectory) => IOEx.CopyDirectory(sourceDirectory, targetDirectory);
+
+    private void Apply_Copy(string targetDirectory, string sourceDirectory) => CopyFiles(targetDirectory, sourceDirectory, true);
 
     private void Apply_Delta(string targetDirectory, string sourceDirectory)
     {
         if (DeltaData == null)
             throw new NullReferenceException($"Expected {nameof(DeltaData)} to not be null but was null.");
 
-        CopyFiles(FolderPath, sourceDirectory, false); // Copy non-patched files.
+        CopyFiles(FolderPath!, sourceDirectory, false); // Copy non-patched files.
         Patch.Apply(DeltaData.PatchData, sourceDirectory, targetDirectory);
     }
 
@@ -171,11 +186,13 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     public static PackageMetadata<T> CreateFromDirectory(string directory, string version, PackageType packageType = PackageType.Copy, T? data = null, List<string>? ignoreRegexes = null)
     {
         var compiledIgnoreRegexes = ignoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
+        var hashes = packageType != PackageType.Legacy ? HashSet.Generate(directory, null, path => path.TryMatchAnyRegex(compiledIgnoreRegexes)) : null;
+
         return new PackageMetadata<T>()
         {
             FolderPath    = directory,
             Version       = version,
-            Hashes        = HashSet.Generate(directory, null, path => path.TryMatchAnyRegex(compiledIgnoreRegexes)),
+            Hashes        = hashes,
             Type          = packageType,
             ExtraData     = data,
             IgnoreRegexes = ignoreRegexes

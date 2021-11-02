@@ -184,7 +184,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
 
         // Get package content directory path.
         var packageContentDirPath = GetPackageContentDirPath(version);
-        var metadata = await Package<T>.ReadMetadataFromDirectoryAsync(packageContentDirPath);
+        var metadata = await Package<T>.ReadOrCreateLegacyMetadataFromDirectoryAsync(packageContentDirPath);
 
         if (IsPackageCurrentProgram())
         {

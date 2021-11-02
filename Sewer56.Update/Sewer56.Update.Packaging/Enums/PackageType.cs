@@ -14,6 +14,12 @@ public enum PackageType
     /// Vcdiff based delta patching.
     /// </summary>
     Delta,
+
+    /// <summary>
+    /// Manifest-less package type.
+    /// Dummy manifest is created at runtime.
+    /// </summary>
+    Legacy
 }
 
 /// <summary/>

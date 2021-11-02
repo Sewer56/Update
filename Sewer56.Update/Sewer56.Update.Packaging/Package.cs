@@ -34,6 +34,19 @@ public static class Package<T> where T : class
     public static async Task<PackageMetadata<T>> ReadMetadataFromDirectoryAsync(string directory, CancellationToken token = default) => await PackageMetadata<T>.ReadFromDirectoryAsync(directory, token);
 
     /// <summary>
+    /// Creates package metadata from a given directory.
+    /// </summary>
+    /// <param name="directory">The directory to create package from.</param>
+    /// <param name="token">Allows for cancelling the task.</param>
+    public static async Task<PackageMetadata<T>> ReadOrCreateLegacyMetadataFromDirectoryAsync(string directory, CancellationToken token = default)
+    {
+        if (HasMetadata(directory))
+            return await ReadMetadataFromDirectoryAsync(directory, token);
+
+        return PackageMetadata<T>.CreateFromDirectory(directory, "1.0", PackageType.Legacy);
+    }
+
+    /// <summary>
     /// Creates a package from a given folder.
     /// </summary>
     /// <param name="folderPath">Path to the folder from which to create package from.</param>
