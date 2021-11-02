@@ -38,7 +38,7 @@ public class PackagingTests
     public async Task CreateDelta_CreatesPackageMetadata()
     {
         // Act
-        await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0.1", "1.0");
+        await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0", "1.0.1");
 
         // Assert
         Assert.True(Package<Empty>.HasMetadata(PackageFolder));
@@ -67,7 +67,7 @@ public class PackagingTests
     public async Task CreateDelta_CanDeserialize()
     {
         // Act
-        var metadata = await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0.1", "1.0");
+        var metadata = await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0", "1.0.1");
         var metadataCopy = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
 
         // Assert
@@ -154,7 +154,7 @@ public class PackagingTests
     public async Task DeltaPackage_CanApplyToFolder()
     {
         // Act
-        await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0.1", "1.0");
+        await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0", "1.0.1");
         var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
         metadata.Apply(ResultFolder, Assets.ManyFileFolderOriginal);
 

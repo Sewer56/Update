@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
-using CsvHelper;
-using CsvHelper.Configuration;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
@@ -28,72 +24,55 @@ internal class Program
             with.HelpWriter = null;
         });
 
-        var parserResult = parser.ParseArguments<CreateOptions>(args);
-        await parserResult.WithParsedAsync<CreateOptions>(Create);
+        var parserResult = parser.ParseArguments<CreateReleaseOptions, CreateCopyPackageOptions, CreateDeltaPackageOptions>(args);
+        await parserResult.WithParsedAsync<CreateReleaseOptions>(CreateRelease);
+        await parserResult.WithParsedAsync<CreateCopyPackageOptions>(CreateCopyPackage);
+        await parserResult.WithParsedAsync<CreateDeltaPackageOptions>(CreateDeltaPackage);
         parserResult.WithNotParsed(errs => HandleParseError(parserResult, errs));
+    }
+
+    private static async Task CreateDeltaPackage(CreateDeltaPackageOptions options)
+    {
+        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
+        await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath, options.LastVersion, options.Version, null, ignoreRegexes);
+    }
+
+    private static async Task CreateCopyPackage(CreateCopyPackageOptions options)
+    {
+        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
+        await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes);
     }
 
     /// <summary>
     /// Creates a new package.
     /// </summary>
-    private static async Task Create(CreateOptions options)
+    private static async Task CreateRelease(CreateReleaseOptions releaseOptions)
     {
-        var copyPackages  = TryParseCsv<CopyPackage>(options.CopyPackagesPath);
-        var deltaPackages = TryParseCsv<DeltaPackage>(options.DeltaPackagesPath);
-        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
-        Directory.CreateDirectory(options.OutputPath);
+        var existingPackages = string.IsNullOrEmpty(releaseOptions.ExistingPackagesPath) ? new List<string>() : (await File.ReadAllLinesAsync(releaseOptions.ExistingPackagesPath)).ToList();
+        Directory.CreateDirectory(releaseOptions.OutputPath);
 
         // Arrange
         var builder = new ReleaseBuilder<Empty>();
-        foreach (var copyPackage in copyPackages)
+        foreach (var existingPackage in existingPackages)
         {
-            builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+            builder.AddExistingPackage(new ExistingPackageBuilderItem()
             {
-                FolderPath = copyPackage.FolderPath,
-                Version = copyPackage.Version,
-                IgnoreRegexes = ignoreRegexes
-            });
-        }
-
-        foreach (var deltaPackage in deltaPackages)
-        {
-            builder.AddDeltaPackage(new DeltaBuilderItem<Empty>()
-            {
-                FolderPath = deltaPackage.CurrentVersionFolder,
-                PreviousVersionFolder = deltaPackage.LastVersionFolder,
-                Version = deltaPackage.CurrentVersion,
-                PreviousVersion = deltaPackage.LastVersion,
-                IgnoreRegexes = ignoreRegexes
+                Path = existingPackage
             });
         }
 
         // Act
         await builder.BuildAsync(new BuildArgs()
         {
-            FileName = options.PackageName,
-            OutputFolder = options.OutputPath
+            FileName = releaseOptions.PackageName,
+            OutputFolder = releaseOptions.OutputPath
         });
-    }
-
-    private static T[] TryParseCsv<T>(string path)
-    {
-        if (string.IsNullOrEmpty(path))
-            return Array.Empty<T>();
-
-        using TextReader reader = new StreamReader(path);
-        using var csvReader     = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HasHeaderRecord = false,
-            Delimiter = ","
-        });
-
-        return csvReader.GetRecords<T>().ToArray();
     }
 
     /// <summary>
     /// Errors or --help or --version.
     /// </summary>
-    static void HandleParseError(ParserResult<CreateOptions> options, IEnumerable<Error> errs)
+    static void HandleParseError(ParserResult<object> options, IEnumerable<Error> errs)
     {
         var helpText = HelpText.AutoBuild(options, help =>
         {

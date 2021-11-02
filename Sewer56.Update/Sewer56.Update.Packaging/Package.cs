@@ -62,7 +62,7 @@ public static class Package<T> where T : class
     /// <param name="data">Extra data to add to the package.</param>
     /// <param name="ignoreRegexes">List of regexes; file is ignored if any matches.</param>
     /// <param name="progress">Used for reporting current progress.</param>
-    public static async Task<PackageMetadata<T>> CreateDeltaAsync(string oldFolderPath, string newFolderPath, string outputFolder, string version, string oldVersion, T? data = null, List<string>? ignoreRegexes = null, Events.ProgressCallback? progress = null)
+    public static async Task<PackageMetadata<T>> CreateDeltaAsync(string oldFolderPath, string newFolderPath, string outputFolder, string oldVersion, string version, T? data = null, List<string>? ignoreRegexes = null, Events.ProgressCallback? progress = null)
     {
         Directory.CreateDirectory(outputFolder);
         var metadata       = PackageMetadata<T>.CreateFromDirectory(newFolderPath, version, PackageType.Delta, data, ignoreRegexes);

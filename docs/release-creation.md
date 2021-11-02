@@ -27,52 +27,65 @@ The following diagram shows a high level overview of the files/components involv
 												+------------------------+
 ```
 
-## Release Creation
+A package contains an individual version of a program; a release is a collection of packages storing multiple versions.
+Packages you install, Releases you upload/publish to the web.
 
-### Using the CLI
+## Creating Packages
 
-For creating fully featured update packages, a separate program called `Update.Tools` is provided. This tool is cross-platform and should be usable from any environment if .NET Core itself is available.
+For creating fully featured update packages using CLI, a separate program called `Sewer56.Update.Tool` is provided.  
+This tool is cross-platform and should be usable from any environment if .NET Core itself is available.
 
 You can find the tool in the `releases` section of the official GitHub repository.  
 
-Usage:  
+### Using the CLI
 
+```bash
+// Create a Copy Package (files are copied directly to destination).
+dotnet Sewer56.Update.Tool.dll CreateCopyPackage --folderpath "Files/NewVersion" --version "1.0" --outputpath "Files/Packages/1.0"
+
+// Create a Delta Package from Previous to New Version.
+dotnet Sewer56.Update.Tool.dll CreateDeltaPackage --folderpath "Files/NewVersion" --lastversionfolderpath "Files/LastVersion" --version "1.0.1" --lastversion "1.0" --outputpath "Files/Packages/1.0_to_1.0.1"
 ```
-  --copypackagespath     Path to a CSV file with all packages to be copied.
-                         Entry should have format: "PathToFolder,Version"
 
-  --deltapackagespath    Path to a CSV file with all packages to be delta
-                         patched. Entry should have format:
-                         "PathToCurrentVersionFolder,CurrentVersion,PathToPrevio
-                         usVersionFolder,PreviousVersion"
+You can access help with e.g. `dotnet Sewer56.Update.Tool.dll CreateCopyPackage --help`.
 
-  --outputpath           Required. The folder where to save the new release.
+### Using the API
 
-  --packagename          (Default: Package) The name for the packages as
-                         downloaded by the user.
+*Note: You can also automatically create packages as part of the release process by using the `ReleaseBuilder<T>` api (see below).
+Only use this API if you wish to create packages without making a release.*
 
-  --ignoreregexespath    Path to a text file containing a list of regular
-                         expressions (1 expression per line) of files to be
-                         ignored in the packages.
+Consider using the `Package<T>` API.  
+Example: 
+
+```csharp
+// Create Regular Package
+await Package<Empty>.CreateAsync(PackageContentFolder, OutputFolder, "1.0");
+
+// Create Delta Package
+await Package<Empty>.CreateDeltaAsync(LastVersionFolder, CurrentVersionFolder, OutputFolder, "1.0", "1.0.1");
 ```
+
+## Creating Releases
+
+### Using the CLI
+
+Create a text file containing a list of all packages in the release (one package per line). 
+Each line should contain a relative or full path to the package to be included. 
 
 Example:
 
-- Copy.csv
+- Packages.txt
 ```
-C:\Test\reloaded.sharedlib.hooks_1.12,1.12.0
-```
-
-- Delta.csv
-```
-C:\Test\reloaded.sharedlib.hooks_1.12,1.12.0,C:\Test\reloaded.sharedlib.hooks_1.11,1.11.0
+Files/Packages/1.0
+Files/Packages/1.0.1
+Files/Packages/1.0_to_1.0.1
 ```
 
 - Command
-```csharp
-// Create a simple release, with full fat update details specified in
-// Copy.csv and delta updates from previous versions in Delta.csv.
-dotnet Sewer56.Update.Tool.dll --copypackagespath "Copy.csv" --deltapackagespath "Delta.csv" --outputpath out
+```bash
+// Create a simple release, with existing packages sourced from Packages.txt
+// Output the release in `Files.release` and call the package files "Poems".
+dotnet Sewer56.Update.Tool.dll --existingpackagespath "Files/Packages.txt" --outputpath "Files/Release" --packagename Poems 
 ```
 
 ### Using the API
@@ -82,7 +95,7 @@ Here is an example:
 
 ```csharp
 // Arrange
-ar builder = new ReleaseBuilder<Empty>();
+var builder = new ReleaseBuilder<Empty>();
 builder.AddCopyPackage(new CopyBuilderItem<Empty>()
 {
     FolderPath = Assets.ManyFileFolderOriginal,

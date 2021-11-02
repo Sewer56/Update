@@ -65,7 +65,7 @@ public class ReleaseMetadataBuilderTests
         const string NewVersion = "1.0.1";
 
         // Arrange
-        var deltaPackage = await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, NewVersion, OldVersion);
+        var deltaPackage = await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, OldVersion, NewVersion);
 
         // Act
         var builder = new ReleaseMetadataBuilder<Empty>();

@@ -79,6 +79,42 @@ public class ReleaseBuilderTests
     }
 
     [Fact]
+    public async Task Build_CanBuildExistingPackageRelease()
+    {
+        const string PackageExtraData = "This package is cool!";
+        const string ExistingPackageVer = "1.0.1";
+        List<string> ignoreRegexes = new List<string>()
+        {
+            ".*Neon.*Genesis.*Evangelion.*",
+        };
+
+        var existingPackagePath = Path.Combine(PackageFolder, ExistingPackageVer);
+
+        // Arrange
+        var existingPackage = await Package<string>.CreateAsync(Assets.ManyFileFolderOriginal, existingPackagePath, ExistingPackageVer, PackageExtraData, ignoreRegexes);
+
+        var builder = new ReleaseBuilder<string>();
+        builder.AddExistingPackage(new ExistingPackageBuilderItem()
+        {
+            Path = existingPackagePath
+        });
+
+        // Act
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        // Assert
+        Assert.Single(metadata.Releases);
+        foreach (var release in metadata.Releases)
+            Assert.True(File.Exists(Path.Combine(OutputFolder, release.FileName)));
+
+        Assert.Equal(ExistingPackageVer, metadata.Releases[0].Version);
+    }
+
+    [Fact]
     public async Task Build_CanBuildMultiPackageRelease()
     {
         // Arrange

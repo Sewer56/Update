@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Sewer56.DeltaPatchGenerator.Lib.Model;
-using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Compressors;
 using Sewer56.Update.Packaging.Enums;
@@ -15,7 +12,6 @@ using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
-using Standart.Hash.xxHash;
 using ThrowHelpers = Sewer56.Update.Misc.ThrowHelpers;
 
 namespace Sewer56.Update.Packaging;
@@ -29,6 +25,17 @@ public class ReleaseBuilder<T> where T : class
     /// The items to be constructed in this release.
     /// </summary>
     public List<object> Items { get; } = new List<object>();
+
+    /// <summary>
+    /// Adds an existing package (must be unpacked) to this release.
+    /// </summary>
+    /// <param name="existingPackageBuilderItem">Builder item containing the location of the existing package.</param>
+    public ReleaseBuilder<T> AddExistingPackage(ExistingPackageBuilderItem existingPackageBuilderItem)
+    {
+        existingPackageBuilderItem.Validate();
+        Items.Add(existingPackageBuilderItem);
+        return this;
+    }
 
     /// <summary>
     /// Adds a default (copy) package to this release.
@@ -70,6 +77,9 @@ public class ReleaseBuilder<T> where T : class
             var itemProgress = progressMixer.Slice(singleItemProgress);
             switch (item)
             {
+                case ExistingPackageBuilderItem existingPackageItem:
+                    await BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
+                    break;
                 case CopyBuilderItem<T> copyBuilderItem:
                     await BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
                     break;
@@ -84,6 +94,12 @@ public class ReleaseBuilder<T> where T : class
         return metadata;
     }
 
+    private async Task BuildExistingPackageItem(ReleaseMetadataBuilder<T> metadata, ExistingPackageBuilderItem existingPackageItem, BuildArgs args, IProgress<double> itemProgress)
+    {
+        var packageMetadata = await Package<T>.ReadMetadataFromDirectoryAsync(existingPackageItem.Path);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), itemProgress);
+    }
+
     private async Task BuildDeltaItem(ReleaseMetadataBuilder<T> metadata, DeltaBuilderItem<T> deltaBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
         using var packageOutputPath = new TemporaryFolderAllocation();
@@ -91,26 +107,24 @@ public class ReleaseBuilder<T> where T : class
         var deltaProgress           = deltaProgressMixer.Slice(0.7);
         var compressProgress        = deltaProgressMixer.Slice(0.3);
 
-        var packageMetadata         = await Package<T>.CreateDeltaAsync(deltaBuilderItem.PreviousVersionFolder, deltaBuilderItem.FolderPath, packageOutputPath.FolderPath, 
-            deltaBuilderItem.Version, deltaBuilderItem.PreviousVersion, deltaBuilderItem.Data, deltaBuilderItem.IgnoreRegexes,
+        var packageMetadata         = await Package<T>.CreateDeltaAsync(deltaBuilderItem.PreviousVersionFolder, deltaBuilderItem.FolderPath, packageOutputPath.FolderPath,
+            deltaBuilderItem.PreviousVersion, deltaBuilderItem.Version, deltaBuilderItem.Data, deltaBuilderItem.IgnoreRegexes,
             (text, progress) =>
             {
                 deltaProgress.Report(progress);
             });
 
-        var deltaFiles = packageMetadata.DeltaData!.PatchData.ToFileHashSet().Files.Select(x => x.RelativePath).ToList();
-        await BuildItemCommon(metadata, args, packageMetadata, deltaFiles, compressProgress);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), compressProgress);
     }
 
     private async Task BuildCopyItem(ReleaseMetadataBuilder<T> metadata, CopyBuilderItem<T> copyBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
         using var packageOutputPath = new TemporaryFolderAllocation();
         var packageMetadata = await Package<T>.CreateAsync(copyBuilderItem.FolderPath, packageOutputPath.FolderPath, copyBuilderItem.Version, copyBuilderItem.Data, copyBuilderItem.IgnoreRegexes);
-        var copyFiles       = packageMetadata.Hashes.Files.Select(x => x.RelativePath).ToList();
-        await BuildItemCommon(metadata, args, packageMetadata, copyFiles, itemProgress);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), itemProgress);
     }
 
-    private async Task BuildItemCommon(ReleaseMetadataBuilder<T> metadata, BuildArgs args, PackageMetadata<T> packageMetadata, List<string> deltaFiles, IProgress<double> progress)
+    private async Task BuildItemCommon(ReleaseMetadataBuilder<T> metadata, BuildArgs args, PackageMetadata<T> packageMetadata, List<string> packageFiles, IProgress<double> progress)
     {
         var fileName = GetPackageFileName(packageMetadata, args);
         metadata.AddPackage(new ReleaseMetadataBuilder<T>.ReleaseMetadataBuilderItem()
@@ -119,8 +133,8 @@ public class ReleaseBuilder<T> where T : class
             Package = packageMetadata
         });
 
-        deltaFiles.Add(packageMetadata.GetDefaultFileName());
-        await args.PackageCompressor.CompressPackageAsync(deltaFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), progress);
+        packageFiles.Add(packageMetadata.GetDefaultFileName());
+        await args.PackageCompressor.CompressPackageAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), progress);
     }
 
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]
@@ -139,6 +153,16 @@ public class ReleaseBuilder<T> where T : class
         var remainingLength = args.MaxFileNameLength.Value - suffix.Length;
         remainingLength     = Math.Clamp(remainingLength, 0, args.FileName.Length);
         return StringExtensions.SanitizeFileName(args.FileName.Substring(0, remainingLength) + suffix);
+    }
+
+    private List<string> GetPackageCopyFiles(PackageMetadata<T> metadata)
+    {
+        return metadata.Type switch
+        {
+            PackageType.Copy  => metadata.Hashes.Files.Select(x => x.RelativePath).ToList(),
+            PackageType.Delta => metadata.DeltaData!.PatchData.ToFileHashSet().Files.Select(x => x.RelativePath).ToList(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 }
 
