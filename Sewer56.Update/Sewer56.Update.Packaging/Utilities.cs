@@ -8,6 +8,7 @@ using System.Threading;
 using Sewer56.DeltaPatchGenerator.Lib;
 using Sewer56.DeltaPatchGenerator.Lib.Model;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Packaging.IO;
 
 namespace Sewer56.Update.Packaging;
 
@@ -23,7 +24,7 @@ public static class Utilities
     /// <param name="overWrite">Whether the copy operation is allowed to overwrite any existing files.</param>
     public static void HashSetCopyFiles(this FileHashSet hashSet, string sourceDirectory, string targetDirectory, bool overWrite = true)
     {
-        var createdDirectorySet = new HashSet<string>();
+        var createdDirectorySet = new CreatedDirectorySet();
         foreach (var file in hashSet.Files)
         {
             var oldPath = Paths.AppendRelativePath(file.RelativePath, sourceDirectory);
@@ -32,20 +33,14 @@ public static class Utilities
             // Do not overwrite if not necessary.
             if (!overWrite && File.Exists(newPath))
                 continue;
-            
-            CreateDirectoryIfNeeded(Path.GetDirectoryName(newPath)!);
+
+            createdDirectorySet.CreateDirectoryIfNeeded(Path.GetDirectoryName(newPath)!);
 
             // Wait until we can copy.
             while (File.Exists(newPath) && !IOEx.CheckFileAccess(newPath, FileMode.Open, FileAccess.Write))
                 Thread.Sleep(100);
             
             File.Copy(oldPath, newPath, true);
-        }
-
-        void CreateDirectoryIfNeeded(string directory)
-        {
-            if (createdDirectorySet!.Add(directory))
-                Directory.CreateDirectory(directory);
         }
     }
 

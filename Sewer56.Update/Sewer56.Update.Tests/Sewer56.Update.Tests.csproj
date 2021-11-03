@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Tests.Dummy\Sewer56.Update.Tests.Dummy.csproj" />
     <ProjectReference Include="..\Sewer56.Update\Sewer56.Update.csproj" />

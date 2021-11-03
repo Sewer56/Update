@@ -114,4 +114,5 @@ This will build a release with 1 package at `Assets.ManyFileFolderOriginal` and 
 
 ## Support for Legacy Releases
 
-For legacy reasons, it is possible to work without this application, however you lose support for cleanup and delta updates (Reason: No manifest file).
+For legacy reasons, packages without a manifest are also supported.  
+This is to make moving from older update systems easier; however you lose the support for automatic cleanup of leftover files from old versions.

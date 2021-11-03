@@ -42,6 +42,6 @@ public class LocalPackageResolver : IPackageResolver
         var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
         await using var sourceFile = File.Open(Path.Combine(_repositoryFolder, releaseItem!.FileName), FileMode.Open);
         await using var targetFile = File.Open(destFilePath, FileMode.Create);
-        await sourceFile.CopyToAsyncEx(targetFile, 65536, progress, cancellationToken);
+        await sourceFile.CopyToAsyncEx(targetFile, 262144, progress, cancellationToken);
     }
 }

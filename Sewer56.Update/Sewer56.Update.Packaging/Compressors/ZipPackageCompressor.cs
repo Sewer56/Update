@@ -30,7 +30,7 @@ public class ZipPackageCompressor : IPackageCompressor
             await using var sourceStream = File.Open(Paths.AppendRelativePath(relativePath, baseDirectory), FileMode.Open, FileAccess.Read);
             await using var entryStream  = entry.Open();
 
-            await sourceStream.CopyToAsyncEx(entryStream, 65536, progressForFile, cancellationToken);
+            await sourceStream.CopyToAsyncEx(entryStream, 131072, progressForFile, cancellationToken);
         }
 
         progress?.Report(1);

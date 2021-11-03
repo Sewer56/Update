@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,18 +35,25 @@ public static class StreamExtensions
     /// <param name="bufferSize">Size of chunks used to copy from source to destination.</param>
     /// <param name="progress">Can be used to report current copying progress.</param>
     /// <param name="cancellationToken">Can be used to cancel the operation.</param>
-    public static async Task CopyToAsyncEx(this Stream source, Stream destination, int bufferSize = 65536, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public static async Task CopyToAsyncEx(this Stream source, Stream destination, int bufferSize = 262144, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         using var buffer = new ArrayRental<byte>(bufferSize);
         var totalBytesCopied = 0L;
         int bytesCopied;
+        bool supportsLength = true;
+
+        try { var _ = source.Length; }
+        catch (Exception e) { supportsLength = false; }
 
         do
         {
             bytesCopied = await source.CopyBufferedToAsync(destination, buffer.Array, cancellationToken);
             totalBytesCopied += bytesCopied;
-            progress?.Report(1.0 * totalBytesCopied / source.Length);
+            if (supportsLength)
+                progress?.Report(1.0 * totalBytesCopied / source.Length);
         } 
         while (bytesCopied > 0);
+
+        progress?.Report(1.0);
     }
 }
