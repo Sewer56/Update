@@ -67,7 +67,7 @@ public class ReleaseBuilderTests
         var metadata = await builder.BuildAsync(new BuildArgs()
         {
             FileName = "Package",
-            OutputFolder = this.OutputFolder
+            OutputFolder = this.OutputFolder,
         });
 
         // Assert

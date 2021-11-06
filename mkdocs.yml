@@ -28,8 +28,15 @@ nav:
   - Creating Releases: release-creation.md
   - CI/CD: ci-cd.md
   - Extensibility:
-    - Custom Download Sources: package-resolvers.md
-    - Custom Extractors: package-extractors.md
-    - Custom Compressors: package-compressors.md
-    - Extra Package Metadata: package-custom-metadata.md
+    - Custom Download Sources: extensibility/package-resolvers.md
+    - Custom Extractors: extensibility/package-extractors.md
+    - Custom Archivers: extensibility/package-archivers.md
+    - Extra Package Metadata: extensibility/package-custom-metadata.md
+  - Built-in Extensions:
+    - Resolvers:
+      - Local Package Resolver: resolvers/local-package-resolver.md
+      - GitHub Release Resolver: resolvers/github-release-resolver.md
+    - Extractors & Archivers:
+      - Zip Package: archivers/zip-package.md
+      - Sharpcompress: archivers/sharpcompress.md
     

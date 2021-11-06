@@ -13,7 +13,7 @@ namespace Sewer56.Update.Extractors.SharpCompress;
 /// <summary>
 /// An implementation that compresses packages using SharpCompress.
 /// </summary>
-public class SharpCompressCompressor : IPackageCompressor
+public class SharpCompressArchiver : IPackageArchiver
 {
     private WriterOptions _writerOptions;
     private ArchiveType _archiveType;
@@ -21,14 +21,14 @@ public class SharpCompressCompressor : IPackageCompressor
     /// <summary/>
     /// <param name="writerOptions">Options for the archive writer.</param>
     /// <param name="archiveType">The archive type to create.</param>
-    public SharpCompressCompressor(WriterOptions writerOptions, ArchiveType archiveType)
+    public SharpCompressArchiver(WriterOptions writerOptions, ArchiveType archiveType)
     {
         _writerOptions = writerOptions;
         _archiveType = archiveType;
     }
 
     /// <inheritdoc />
-    public Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         using Stream stream = File.OpenWrite(destPath);
         using var writer = WriterFactory.Open(stream, _archiveType, _writerOptions);

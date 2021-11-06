@@ -71,7 +71,7 @@ public class SharpCompressExtractorTests
                 {
                     FileName = "Package",
                     OutputFolder = this.OutputFolder,
-                    PackageCompressor = new SharpCompressCompressor(new WriterOptions(compressionType), supportedFormat.Item1)
+                    PackageArchiver = new SharpCompressArchiver(new WriterOptions(compressionType), supportedFormat.Item1)
                 });
 
                 // Assert

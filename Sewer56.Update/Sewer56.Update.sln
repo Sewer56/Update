@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31815.197
@@ -26,6 +26,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{B775AF40-AD9D-4A16-9D8F-033795B3B22C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Extractors.SharpCompress", "Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj", "{958D57D6-6095-4781-8249-97BD515CEE50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Resolvers.GitHub", "Resolvers\Sewer56.Update.Resolvers.GitHub\Sewer56.Update.Resolvers.GitHub.csproj", "{D854213F-34EB-4196-AF54-BB463BF7C116}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,14 @@ Global
 		{958D57D6-6095-4781-8249-97BD515CEE50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{958D57D6-6095-4781-8249-97BD515CEE50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{958D57D6-6095-4781-8249-97BD515CEE50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D854213F-34EB-4196-AF54-BB463BF7C116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D854213F-34EB-4196-AF54-BB463BF7C116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D854213F-34EB-4196-AF54-BB463BF7C116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D854213F-34EB-4196-AF54-BB463BF7C116}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -78,6 +88,8 @@ Global
 		{A08BC328-342B-4C32-85B1-42EFF844B83E} = {49BB6875-072B-40A7-92E3-C9A306352A75}
 		{88FBA45B-7570-47F4-A3A6-658699612341} = {A08BC328-342B-4C32-85B1-42EFF844B83E}
 		{958D57D6-6095-4781-8249-97BD515CEE50} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
+		{D854213F-34EB-4196-AF54-BB463BF7C116} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
+		{2F45BF2A-C340-4341-A691-6CCB61189C0B} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61C6447A-EA3D-4933-80BC-38F3D6ED8FBA}

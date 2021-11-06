@@ -1,12 +1,12 @@
 ## Package Compressors
 
-You can add support for creating releases with custom archive formats by extending the `IPackageCompressor` interface, which is defined as:
+You can add support for creating releases with custom archive formats by extending the `IPackageArchiver` interface, which is defined as:
 
 ```csharp
 /// <summary>
-/// Provider for compressing packages.
+/// Provider for archiving packages.
 /// </summary>
-public interface IPackageCompressor
+public interface IPackageArchiver
 {
     /// <summary>
     /// Extracts contents of the given package to the given output directory.
@@ -16,7 +16,7 @@ public interface IPackageCompressor
     /// <param name="destPath">The path where to save the package.</param>
     /// <param name="progress">Reports progress back.</param>
     /// <param name="cancellationToken">Can be used to cancel the operation.</param>
-    Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
+    Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
 }
 ```
 
@@ -26,7 +26,7 @@ public interface IPackageCompressor
 /// <summary>
 /// Compresses packages into a zip file using the DEFLATE compression algorithm.
 /// </summary>
-public class ZipPackageCompressor : IPackageCompressor
+public class ZipPackageArchiver : IPackageArchiver
 {
     /// <inheritdoc />
     public async Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
@@ -54,13 +54,13 @@ public class ZipPackageCompressor : IPackageCompressor
 
 ### Usage
 
-Specify `IPackageCompressor` in `BuildArgs` when creating a new release with `ReleaseBuilder`.
+Specify `IPackageArchiver` in `BuildArgs` when creating a new release with `ReleaseBuilder`.
 
 ```csharp
 var metadata = await builder.BuildAsync(new BuildArgs()
 {
     FileName = "Package",
     OutputFolder = this.OutputFolder,
-    PackageCompressor = new ZipPackageCompressor()
+    PackageCompressor = new ZipPackageArchiver()
 });
 ```

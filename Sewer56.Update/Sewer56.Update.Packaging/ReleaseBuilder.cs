@@ -135,7 +135,7 @@ public class ReleaseBuilder<T> where T : class
         });
 
         packageFiles.Add(packageMetadata.GetDefaultFileName());
-        await args.PackageCompressor.CompressPackageAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), progress);
+        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), progress);
     }
 
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]
@@ -185,7 +185,7 @@ public class BuildArgs
     /// <summary>
     /// Builds the package.
     /// </summary>
-    public IPackageCompressor PackageCompressor { get; set; } = new ZipPackageCompressor();
+    public IPackageArchiver PackageArchiver { get; set; } = new ZipPackageArchiver();
 
     /// <summary>
     /// Trims the filename to a maximum set number of characters.

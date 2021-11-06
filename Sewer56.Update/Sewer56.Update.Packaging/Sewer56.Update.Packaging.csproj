@@ -13,8 +13,4 @@
     <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Compressors\" />
-  </ItemGroup>
-
 </Project>

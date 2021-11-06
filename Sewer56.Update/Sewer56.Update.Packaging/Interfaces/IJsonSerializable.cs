@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -61,6 +62,27 @@ public static class JsonSerializableExtensions
         await using var fileStream = File.Open(path, FileMode.Open);
         var metadata = await JsonSerializer.DeserializeAsync<T>(fileStream, null, token);
         metadata!.AfterDeserialize(metadata, path);
+        return metadata;
+    }
+
+    /// <summary>
+    /// Reads the current item from a Json Directory.
+    /// </summary>
+    /// <param name="serializable">The "this" instance.</param>
+    /// <param name="data">The data containing the file to deserialize</param>
+    public static T ReadFromData<T>(this T serializable, Span<byte> data) where T : IJsonSerializable, new()
+    {
+        return ReadFromData<T>(data);
+    }
+
+    /// <summary>
+    /// Reads the current item from raw data.
+    /// </summary>
+    /// <param name="data">The data containing the file to deserialize</param>
+    public static T ReadFromData<T>(Span<byte> data) where T : IJsonSerializable, new()
+    {
+        var metadata = JsonSerializer.Deserialize<T>(data);
+        metadata!.AfterDeserialize(metadata, "");
         return metadata;
     }
 

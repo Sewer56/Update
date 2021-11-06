@@ -13,10 +13,10 @@ namespace Sewer56.Update.Packaging.Compressors;
 /// <summary>
 /// Compresses packages into a zip file using the DEFLATE compression algorithm.
 /// </summary>
-public class ZipPackageCompressor : IPackageCompressor
+public class ZipPackageArchiver : IPackageArchiver
 {
     /// <inheritdoc />
-    public async Task CompressPackageAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public async Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         await using var zipStream = new FileStream(destPath, FileMode.Create);
         using var zipFile  = new ZipArchive(zipStream, ZipArchiveMode.Update);
