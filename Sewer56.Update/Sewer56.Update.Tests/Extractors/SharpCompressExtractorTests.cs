@@ -27,26 +27,26 @@ public class SharpCompressExtractorTests
     [Fact]
     public async Task SharpCompressCompressor_CanCompress()
     {
-        var supportedFormats = new List<(ArchiveType, List<CompressionType>)>()
+        var supportedFormats = new List<(ArchiveType, List<(CompressionType, string)>)>()
         {
             { 
-                (ArchiveType.Tar, new List<CompressionType>() 
+                (ArchiveType.Tar, new List<(CompressionType, string)>() 
                 {
-                    CompressionType.None,
-                    CompressionType.LZip,
-                    CompressionType.GZip,
-                    CompressionType.BZip2,
+                    (CompressionType.None, ".tar"),
+                    (CompressionType.LZip, ".tar.lz"),
+                    (CompressionType.GZip, ".tar.gz"),
+                    (CompressionType.BZip2, ".tar.bz2")
                 })
             },
 
             {
-                (ArchiveType.Zip, new List<CompressionType>()
+                (ArchiveType.Zip, new List<(CompressionType, string)>()
                 {
-                    CompressionType.None,
-                    CompressionType.Deflate,
-                    CompressionType.BZip2,
-                    CompressionType.LZMA,
-                    CompressionType.PPMd,
+                    (CompressionType.None, ".zip"),
+                    (CompressionType.Deflate, ".zip"),
+                    (CompressionType.BZip2, ".zip"),
+                    (CompressionType.LZMA, ".zip"),
+                    (CompressionType.PPMd, ".zip")
                 })
             },
         };
@@ -54,7 +54,7 @@ public class SharpCompressExtractorTests
         var decompressor = new SharpCompressExtractor();
         foreach (var supportedFormat in supportedFormats)
         {
-            foreach (var compressionType in supportedFormat.Item2)
+            foreach (var compressionAndExtension in supportedFormat.Item2)
             {
                 IOEx.TryDeleteDirectory(OutputFolder);
 
@@ -71,7 +71,7 @@ public class SharpCompressExtractorTests
                 {
                     FileName = "Package",
                     OutputFolder = this.OutputFolder,
-                    PackageArchiver = new SharpCompressArchiver(new WriterOptions(compressionType), supportedFormat.Item1)
+                    PackageArchiver = new SharpCompressArchiver(new WriterOptions(compressionAndExtension.Item1), supportedFormat.Item1)
                 });
 
                 // Assert
@@ -80,6 +80,7 @@ public class SharpCompressExtractorTests
                 {
                     var filePath = Path.Combine(OutputFolder, release.FileName);
                     Assert.True(File.Exists(filePath));
+                    Assert.EndsWith(compressionAndExtension.Item2, release.FileName);
 
                     // Can decompress
                     var extractedPath = Path.Combine(OutputFolder, Path.GetFileNameWithoutExtension(release.FileName), "out");

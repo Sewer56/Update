@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -141,10 +141,11 @@ public class ReleaseBuilder<T> where T : class
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]
     private string GetPackageFileName(PackageMetadata<T> package, BuildArgs args)
     {
+        var extension = args.PackageArchiver.GetFileExtension();
         string suffix = package.Type switch
         {
-            PackageType.Copy  => $"{package.Version}.pkg",
-            PackageType.Delta => $"{package.DeltaData!.OldVersion}_to_{package.Version}.pkg",
+            PackageType.Copy  => $"{package.Version}{extension}",
+            PackageType.Delta => $"{package.DeltaData!.OldVersion}_to_{package.Version}{extension}",
             _ => throw new ArgumentOutOfRangeException()
         };
 

@@ -43,4 +43,30 @@ public class SharpCompressArchiver : IPackageArchiver
         // Write Format to End of Stream
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public string GetFileExtension()
+    {
+        return _archiveType switch
+        {
+            ArchiveType.Rar => ".rar",
+            ArchiveType.Zip => ".zip",
+            ArchiveType.Tar => $".tar{GetTarCompressionTypeExtension()}",
+            ArchiveType.SevenZip => ".7z",
+            ArchiveType.GZip => ".gz",
+            _ => ".bin"
+        };
+    }
+
+    private string GetTarCompressionTypeExtension()
+    {
+        return _writerOptions.CompressionType switch
+        {
+            CompressionType.GZip => ".gz",
+            CompressionType.BZip2 => ".bz2",
+            CompressionType.LZip => ".lz",
+            CompressionType.Xz => ".xz",
+            _ => ""
+        };
+    }
 }

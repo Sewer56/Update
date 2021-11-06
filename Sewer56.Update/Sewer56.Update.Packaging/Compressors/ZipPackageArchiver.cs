@@ -35,4 +35,7 @@ public class ZipPackageArchiver : IPackageArchiver
 
         progress?.Report(1);
     }
+
+    /// <inheritdoc />
+    public string GetFileExtension() => ".zip";
 }

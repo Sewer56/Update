@@ -19,4 +19,10 @@ public interface IPackageArchiver
     /// <param name="progress">Reports progress back.</param>
     /// <param name="cancellationToken">Can be used to cancel the operation.</param>
     Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the file extension for a given archive format.
+    /// </summary>
+    /// <returns>The file extension, including dot.</returns>
+    string GetFileExtension();
 }
