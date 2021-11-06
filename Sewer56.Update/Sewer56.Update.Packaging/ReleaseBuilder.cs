@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -91,7 +91,7 @@ public class ReleaseBuilder<T> where T : class
         }
 
         var metadata = metadataBuilder.Build();
-        await metadata.ToDirectoryAsync(args.OutputFolder);
+        await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName);
         return metadata;
     }
 
@@ -177,6 +177,13 @@ public class BuildArgs
     /// It may be shortened.
     /// </summary>
     public string FileName { get; set; } = "";
+
+    /// <summary>
+    /// The package name used for release metadata file for the current release.
+    /// The metadata contains information about the available packages in this release.
+    /// Only override this if hosting multiple items inside one release; e.g. multiple programs in one GitHub Release.
+    /// </summary>
+    public string MetadataFileName { get; set; } = Singleton<ReleaseMetadata>.Instance.GetDefaultFileName();
 
     /// <summary>
     /// The folder where everything should be output.

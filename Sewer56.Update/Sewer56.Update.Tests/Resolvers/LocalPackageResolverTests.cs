@@ -10,6 +10,7 @@ using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers;
+using Sewer56.Update.Structures;
 using Xunit;
 
 namespace Sewer56.Update.Tests.Resolvers;
@@ -87,6 +88,42 @@ public class LocalPackageResolverTests
 
         // Act
         var resolver = new LocalPackageResolver(OutputFolder);
+        await resolver.InitializeAsync();
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        await resolver.DownloadPackageAsync(versions[0], packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanDownloadItem_WithCustomMetadataFile()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+        const string MetadataName = "Package.json";
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            MetadataFileName = MetadataName
+        });
+
+        // Act
+        var resolver = new LocalPackageResolver(OutputFolder, new CommonPackageResolverSettings()
+        {
+            MetadataFileName = MetadataName
+        });
+
         await resolver.InitializeAsync();
 
         var versions = await resolver.GetPackageVersionsAsync();

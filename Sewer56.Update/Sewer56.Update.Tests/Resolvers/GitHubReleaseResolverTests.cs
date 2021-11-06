@@ -11,6 +11,7 @@ using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers;
 using Sewer56.Update.Resolvers.GitHub;
+using Sewer56.Update.Structures;
 using Xunit;
 
 namespace Sewer56.Update.Tests.Resolvers;
@@ -51,7 +52,7 @@ public class GitHubReleaseResolverTests
             // Act for Prerelease
             ResolverConfiguration.AllowPrereleases = true;
             var versionsWithPrereleases = await resolver.GetPackageVersionsAsync();
-            Assert.Equal(4, versionsWithPrereleases.Count);
+            Assert.Equal(5, versionsWithPrereleases.Count);
         }
     }
 
@@ -65,6 +66,26 @@ public class GitHubReleaseResolverTests
         var versions = await resolver.GetPackageVersionsAsync();
         
         await resolver.DownloadPackageAsync(versions[0], packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanDownloadItem_WithCustomMetadataFile()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+
+        // Act
+        ResolverConfiguration.AllowPrereleases = true;
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration, new CommonPackageResolverSettings()
+        {
+            MetadataFileName = "Package.json"
+        });
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        var version = versions.Find(x => x.Equals(new NuGetVersion("3.0-meta")));
+        await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
 
         // Assert
         Assert.True(File.Exists(packageFilePath));

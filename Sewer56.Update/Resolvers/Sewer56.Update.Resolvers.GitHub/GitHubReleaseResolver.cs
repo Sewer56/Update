@@ -11,6 +11,7 @@ using Sewer56.Update.Interfaces;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
+using Sewer56.Update.Structures;
 using FileMode = Octokit.FileMode;
 
 namespace Sewer56.Update.Resolvers.GitHub;
@@ -22,13 +23,16 @@ public class GitHubReleaseResolver : IPackageResolver
 {
     private GitHubClient? _client;
     private GitHubResolverConfiguration _configuration;
+    private CommonPackageResolverSettings _commonResolverSettings;
 
     /// <summary>
     /// A package resolver that uses GitHub as the source, with support for response caching.
     /// </summary>
     /// <param name="configuration">Configuration for the GitHub Resolver.</param>
-    public GitHubReleaseResolver(GitHubResolverConfiguration configuration)
+    /// <param name="resolverSettings">Settings that override how most package resolvers work.</param>
+    public GitHubReleaseResolver(GitHubResolverConfiguration configuration, CommonPackageResolverSettings? resolverSettings = null)
     {
+        _commonResolverSettings = resolverSettings ?? new CommonPackageResolverSettings();
         _client = GitHubClientInstance.TryGet(out _);
         _configuration = configuration;
     }
@@ -61,7 +65,7 @@ public class GitHubReleaseResolver : IPackageResolver
     {
         var releases   = await _client.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
         var release    = releases.FirstOrDefault(x => new NuGetVersion(x.TagName).Equals(version));
-        var releaseMetadataAsset = release.Assets.First(x => x.Name == Singleton<ReleaseMetadata>.Instance.GetDefaultFileName());
+        var releaseMetadataAsset = release.Assets.First(x => x.Name == _commonResolverSettings.MetadataFileName);
 
         using var webClient      = new WebClient();
         var releaseMetadataBytes = await webClient.DownloadDataTaskAsync(releaseMetadataAsset.BrowserDownloadUrl);

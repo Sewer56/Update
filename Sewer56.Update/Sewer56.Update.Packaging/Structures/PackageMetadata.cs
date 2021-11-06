@@ -172,7 +172,7 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     /// <param name="token">Allows for cancelling the task.</param>
     public static async Task<PackageMetadata<T>> ReadFromDirectoryAsync(string directory, CancellationToken token = default)
     {
-        return await JsonSerializableExtensions.ReadFromDirectoryAsync<PackageMetadata<T>>(directory, token);
+        return await JsonSerializableExtensions.ReadFromDirectoryAsync<PackageMetadata<T>>(directory, null, token);
     }
 
     /// <summary>

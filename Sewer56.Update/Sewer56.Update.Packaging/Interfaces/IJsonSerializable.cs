@@ -44,21 +44,23 @@ public static class JsonSerializableExtensions
     /// Reads the current item from a Json Directory.
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
-    /// <param name="directory">The directory to create package from.</param>
+    /// <param name="directory">The directory to read item from.</param>
+    /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryAsync<T>(this T serializable, string directory, CancellationToken token = default) where T : IJsonSerializable, new()
+    public static async Task<T> ReadFromDirectoryAsync<T>(this T serializable, string directory, string fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
     {
-        return await ReadFromDirectoryAsync<T>(directory, token);
+        return await ReadFromDirectoryAsync<T>(directory, fileName, token);
     }
 
     /// <summary>
     /// Reads the current item from a Json Directory.
     /// </summary>
-    /// <param name="directory">The directory to create package from.</param>
+    /// <param name="directory">The directory to read item from.</param>
+    /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryAsync<T>(string directory, CancellationToken token = default) where T : IJsonSerializable, new()
+    public static async Task<T> ReadFromDirectoryAsync<T>(string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
     {
-        var path = Singleton<T>.Instance.GetMetadataPath(directory);
+        var path = Singleton<T>.Instance.GetMetadataPath(directory, fileName);
         await using var fileStream = File.Open(path, FileMode.Open);
         var metadata = await JsonSerializer.DeserializeAsync<T>(fileStream, null, token);
         metadata!.AfterDeserialize(metadata, path);
@@ -91,9 +93,10 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="serializable">The serializable item.</param>
     /// <param name="folderPath">Path to the file to write Json file in.</param>
-    public static async Task ToDirectoryAsync<T>(this T serializable, string folderPath) where T : IJsonSerializable, new()
+    /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
+    public static async Task ToDirectoryAsync<T>(this T serializable, string folderPath, string? fileName = null) where T : IJsonSerializable, new()
     {
-        await ToJsonAsync(serializable, Path.Combine(folderPath, serializable.GetDefaultFileName()));
+        await ToJsonAsync(serializable, Path.Combine(folderPath, fileName ?? serializable.GetDefaultFileName()));
     }
 
     /// <summary>
@@ -106,8 +109,8 @@ public static class JsonSerializableExtensions
         return File.Exists(GetMetadataPath(serializable, directory));
     }
 
-    internal static string GetMetadataPath<T>(this T serializable, string directory) where T : IJsonSerializable, new()
+    internal static string GetMetadataPath<T>(this T serializable, string directory, string? fileName = null) where T : IJsonSerializable, new()
     {
-        return Path.Combine(directory, serializable.GetDefaultFileName());
+        return Path.Combine(directory, fileName ?? serializable.GetDefaultFileName());
     }
 }

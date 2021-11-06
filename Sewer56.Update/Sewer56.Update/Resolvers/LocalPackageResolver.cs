@@ -11,6 +11,7 @@ using Sewer56.Update.Interfaces;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
+using Sewer56.Update.Structures;
 
 namespace Sewer56.Update.Resolvers;
 
@@ -22,16 +23,19 @@ public class LocalPackageResolver : IPackageResolver
 {
     private ReleaseMetadata? _releases;
     private string _repositoryFolder;
+    private CommonPackageResolverSettings _commonResolverSettings;
 
     /// <summary/>
     /// <param name="repositoryFolder">Folder containing packages and package manifest.</param>
-    public LocalPackageResolver(string repositoryFolder)
+    /// <param name="resolverSettings">Settings that override how most package resolvers work.</param>
+    public LocalPackageResolver(string repositoryFolder, CommonPackageResolverSettings? resolverSettings = null)
     {
         _repositoryFolder = repositoryFolder;
+        _commonResolverSettings = resolverSettings ?? new CommonPackageResolverSettings();
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(_repositoryFolder);
+    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(_repositoryFolder, _commonResolverSettings.MetadataFileName);
 
     /// <inheritdoc />
     public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata());
