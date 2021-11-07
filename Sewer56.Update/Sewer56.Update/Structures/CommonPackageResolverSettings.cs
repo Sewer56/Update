@@ -16,4 +16,9 @@ public class CommonPackageResolverSettings
     /// Only override this if hosting multiple items inside one release; e.g. multiple programs in one GitHub Release.
     /// </summary>
     public string MetadataFileName { get; set; } = Singleton<ReleaseMetadata>.Instance.GetDefaultFileName();
+
+    /// <summary>
+    /// Set to true to allow prereleases.
+    /// </summary>
+    public bool AllowPrereleases { get; set; } = false;
 }

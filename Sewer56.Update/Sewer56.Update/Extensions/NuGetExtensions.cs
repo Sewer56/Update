@@ -15,11 +15,17 @@ public static class NuGetExtensions
     /// <summary>
     /// Converts all <see cref="ReleaseMetadata"/> Release version into NuGet Versions.
     /// </summary>
-    public static List<NuGetVersion> GetNuGetVersionsFromReleaseMetadata(this ReleaseMetadata metadata)
+    public static List<NuGetVersion> GetNuGetVersionsFromReleaseMetadata(this ReleaseMetadata metadata, bool allowPrereleases)
     {
         var nugetVersions = new List<NuGetVersion>(metadata.Releases.Count);
         foreach (var release in metadata.Releases)
-            nugetVersions.Add(new NuGetVersion(release.Version));
+        {
+            var nuGetVersion = new NuGetVersion(release.Version);
+            if (nuGetVersion.IsPrerelease && !allowPrereleases)
+                continue;
+
+            nugetVersions.Add(nuGetVersion);
+        }
 
         nugetVersions.Sort((a, b) => a.CompareTo(b)); // Sort ascending.
         return nugetVersions;

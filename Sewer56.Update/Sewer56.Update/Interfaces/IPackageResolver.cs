@@ -28,7 +28,7 @@ public interface IPackageResolver
     /// Returns all available package versions.
     /// </summary>
     /// <remarks>
-    ///     If you have release metadata, available consider using <see cref="NuGetExtensions.GetNuGetVersionsFromReleaseMetadata(ReleaseMetadata)"/>.
+    ///     If you have release metadata, available consider using <see cref="NuGetExtensions.GetNuGetVersionsFromReleaseMetadata"/>.
     ///     If the source provides its own release system with versions (e.g. GitHub API), use the versions returned from the API call.
     /// </remarks>
     Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default);

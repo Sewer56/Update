@@ -10,6 +10,7 @@ using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers;
+using Sewer56.Update.Resolvers.GitHub;
 using Sewer56.Update.Structures;
 using Xunit;
 
@@ -95,6 +96,48 @@ public class LocalPackageResolverTests
 
         // Assert
         Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_SupportsPrerelease()
+    {
+        const string prereleaseVersion = "2.0-pre";
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderTarget,
+            Version = prereleaseVersion
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        // Act
+        var settings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+        var resolver = new LocalPackageResolver(OutputFolder, settings);
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        // Assert
+        Assert.Equal(2, versions.Count);
+        Assert.Contains(versions, x => x.Equals(new NuGetVersion(prereleaseVersion)));
+
+        // Without Prereleases
+        settings.AllowPrereleases = false;
+        versions = await resolver.GetPackageVersionsAsync();
+        Assert.Single(versions);
+        Assert.DoesNotContain(versions, x => x.Equals(new NuGetVersion(prereleaseVersion)));
     }
 
     [Fact]

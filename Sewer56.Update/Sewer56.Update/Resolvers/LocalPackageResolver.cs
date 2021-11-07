@@ -38,7 +38,7 @@ public class LocalPackageResolver : IPackageResolver
     public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(_repositoryFolder, _commonResolverSettings.MetadataFileName);
 
     /// <inheritdoc />
-    public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata());
+    public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));
 
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)

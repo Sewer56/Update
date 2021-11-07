@@ -37,23 +37,39 @@ public class GitHubReleaseResolverTests
     [Fact]
     public async Task GetPackageVersionsAsync_CanFindMultipleItems()
     {
+        var commonResolverSettings = new CommonPackageResolverSettings();
         for (int x = 0; x < 2; x++)
         {
             // Act
-            ResolverConfiguration.AllowPrereleases = false;
-            var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+            commonResolverSettings.AllowPrereleases = false;
+            var resolver = new GitHubReleaseResolver(ResolverConfiguration, commonResolverSettings);
             var versions = await resolver.GetPackageVersionsAsync();
 
             // Assert
             Assert.Equal(new NuGetVersion("3.0"), versions[2]);
             Assert.Equal(new NuGetVersion("2.0"), versions[1]);
             Assert.Equal(new NuGetVersion("1.0"), versions[0]);
+            Assert.Equal(3, versions.Count);
 
             // Act for Prerelease
-            ResolverConfiguration.AllowPrereleases = true;
+            commonResolverSettings.AllowPrereleases = true;
             var versionsWithPrereleases = await resolver.GetPackageVersionsAsync();
             Assert.Equal(5, versionsWithPrereleases.Count);
         }
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_SupportsPrerelease()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings()
+        {
+            AllowPrereleases = true
+        };
+
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration, commonResolverSettings);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        Assert.Contains(versions, x => x.Equals(new NuGetVersion("3.0-meta")));
     }
 
     [Fact]
@@ -77,10 +93,10 @@ public class GitHubReleaseResolverTests
         var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
 
         // Act
-        ResolverConfiguration.AllowPrereleases = true;
         var resolver = new GitHubReleaseResolver(ResolverConfiguration, new CommonPackageResolverSettings()
         {
-            MetadataFileName = "Package.json"
+            MetadataFileName = "Package.json",
+            AllowPrereleases = true
         });
 
         var versions = await resolver.GetPackageVersionsAsync();

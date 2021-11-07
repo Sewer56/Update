@@ -47,7 +47,7 @@ public class GitHubReleaseResolver : IPackageResolver
         {
             var releases = await _client.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
             var releasesEnumerable = releases.AsEnumerable();
-            if (!_configuration.AllowPrereleases)
+            if (!_commonResolverSettings.AllowPrereleases)
                 releasesEnumerable = releases.Where(x => x.Prerelease == false);
 
             var result = releasesEnumerable.Select(x => new NuGetVersion(x.TagName)).ToList();

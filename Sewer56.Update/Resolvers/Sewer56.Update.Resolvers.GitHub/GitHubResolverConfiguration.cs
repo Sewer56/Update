@@ -14,9 +14,4 @@ public class GitHubResolverConfiguration
     /// The repository name associated with the resolver.
     /// </summary>
     public string? RepositoryName { get; set; }
-
-    /// <summary>
-    /// Set to true to allow prereleases.
-    /// </summary>
-    public bool AllowPrereleases { get; set; } = false;
 }
