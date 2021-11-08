@@ -36,6 +36,7 @@ nav:
     - Resolvers:
       - Local Package Resolver: resolvers/local-package-resolver.md
       - GitHub Release Resolver: resolvers/github-release-resolver.md
+      - GameBanana Package Resolver: resolvers/gamebanana-package-resolver.md
     - Extractors & Archivers:
       - Zip Package: archivers/zip-package.md
       - Sharpcompress: archivers/sharpcompress.md
