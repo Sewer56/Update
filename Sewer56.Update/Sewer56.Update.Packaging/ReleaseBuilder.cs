@@ -149,7 +149,11 @@ public class ReleaseBuilder<T> where T : class
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        return StringExtensions.SanitizeFileName(args.FileName + suffix);
+        var fileName = StringExtensions.SanitizeFileName(args.FileName + suffix);
+        if (args.FileNameFilter != null)
+            fileName = args.FileNameFilter(fileName);
+        
+        return fileName;
     }
 
     private List<string> GetPackageCopyFiles(PackageMetadata<T> metadata)
@@ -167,7 +171,7 @@ public class ReleaseBuilder<T> where T : class
 public class BuildArgs
 {
     /// <summary>
-    /// The file name for the current release.
+    /// The file name for the current release, no extension.
     /// This name will be padded with version info.
     /// It may be shortened.
     /// </summary>
@@ -189,6 +193,11 @@ public class BuildArgs
     /// Builds the package.
     /// </summary>
     public IPackageArchiver PackageArchiver { get; set; } = new ZipPackageArchiver();
+
+    /// <summary>
+    /// A function used for file name filtering.
+    /// </summary>
+    public Func<string, string>? FileNameFilter { get; set; }
 
     /// <summary>
     /// Validates whether the build arguments are correct.

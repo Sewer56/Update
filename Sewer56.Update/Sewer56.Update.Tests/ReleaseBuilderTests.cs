@@ -8,6 +8,7 @@ using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
+using Sewer56.Update.Resolvers.GameBanana;
 using Xunit;
 
 namespace Sewer56.Update.Tests;
@@ -143,6 +144,41 @@ public class ReleaseBuilderTests
         Assert.Equal(2, metadata.Releases.Select(x => x.FileName).ToHashSet().Count); // All files are unique.
         foreach (var release in metadata.Releases)
         {
+            Assert.True(File.Exists(Path.Combine(OutputFolder, release.FileName)));
+        }
+    }
+
+    [Fact]
+    public async Task Build_GameBanana_SupportsFileNameLengthFilter()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderTarget,
+            Version = "1.0.0"
+        });
+
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0.0-pre" // Oh no, Monika messed something up!
+        });
+
+        // Act
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "SuperDuperCoolPackageBamKaWham",
+            OutputFolder = this.OutputFolder,
+            FileNameFilter = GameBananaUtilities.SanitizeFileName
+        });
+
+        // Assert
+        Assert.Equal(2, metadata.Releases.Count);
+        Assert.Equal(2, metadata.Releases.Select(x => x.FileName).ToHashSet().Count); // All files are unique.
+        foreach (var release in metadata.Releases)
+        {
+            Assert.True(release.FileName.Length <= GameBananaUtilities.MaxUnmodifiedFileNameLength);
             Assert.True(File.Exists(Path.Combine(OutputFolder, release.FileName)));
         }
     }

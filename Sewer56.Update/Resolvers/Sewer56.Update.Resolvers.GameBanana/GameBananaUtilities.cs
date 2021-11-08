@@ -15,12 +15,12 @@ public static class GameBananaUtilities
     /// <summary>
     /// Maximum file name length accepted by GameBanana.
     /// </summary>
-    private const int MaxFileNameLength = 40;
+    public const int MaxFileNameLength = 40;
 
     /// <summary>
     /// Maximum file name length GameBanana accepts without editing the file name.
     /// </summary>
-    private const int MaxUnmodifiedFileNameLength = MaxFileNameLength - 6; // _xxxxx
+    public const int MaxUnmodifiedFileNameLength = MaxFileNameLength - 6; // _xxxxx
 
     /// <summary>
     /// Removes characters stripped out by GameBanana's file name filter.
@@ -30,7 +30,14 @@ public static class GameBananaUtilities
     public static string SanitizeFileName(string fileName)
     {
         var noExtension = Path.GetFileNameWithoutExtension(fileName).ToLower();
-        return GbFileNameRegex.Replace(noExtension, "") + Path.GetExtension(fileName);
+        var extension   = Path.GetExtension(fileName);
+        var replaced    = GbFileNameRegex.Replace(noExtension, "");
+
+        var excessChars = (replaced.Length + extension.Length) - MaxUnmodifiedFileNameLength;
+        if (excessChars <= 0)
+            return replaced + extension;
+
+        return replaced.Substring(excessChars, (MaxUnmodifiedFileNameLength - extension.Length)) + extension;
     }
 
     /// <summary>
@@ -45,7 +52,7 @@ public static class GameBananaUtilities
         var noExtensionChars = Path.GetFileNameWithoutExtension(sanitized);
         var extension        = Path.GetExtension(sanitized);
 
-        var excessChars = (noExtensionChars.Length + extension.Length - MaxUnmodifiedFileNameLength);
+        var excessChars = (noExtensionChars.Length + extension.Length) - MaxUnmodifiedFileNameLength;
         if (excessChars <= 0)
             return noExtensionChars;
 
