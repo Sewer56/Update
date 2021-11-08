@@ -149,12 +149,7 @@ public class ReleaseBuilder<T> where T : class
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        if (!args.MaxFileNameLength.HasValue) 
-            return StringExtensions.SanitizeFileName(args.FileName + suffix);
-
-        var remainingLength = args.MaxFileNameLength.Value - suffix.Length;
-        remainingLength     = Math.Clamp(remainingLength, 0, args.FileName.Length);
-        return StringExtensions.SanitizeFileName(args.FileName.Substring(0, remainingLength) + suffix);
+        return StringExtensions.SanitizeFileName(args.FileName + suffix);
     }
 
     private List<string> GetPackageCopyFiles(PackageMetadata<T> metadata)
@@ -194,12 +189,6 @@ public class BuildArgs
     /// Builds the package.
     /// </summary>
     public IPackageArchiver PackageArchiver { get; set; } = new ZipPackageArchiver();
-
-    /// <summary>
-    /// Trims the filename to a maximum set number of characters.
-    /// This is required for some hosting sites.
-    /// </summary>
-    public int? MaxFileNameLength { get; set; }
 
     /// <summary>
     /// Validates whether the build arguments are correct.

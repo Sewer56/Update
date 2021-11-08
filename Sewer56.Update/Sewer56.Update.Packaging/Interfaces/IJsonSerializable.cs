@@ -68,7 +68,28 @@ public static class JsonSerializableExtensions
     }
 
     /// <summary>
-    /// Reads the current item from a Json Directory.
+    /// Reads the current item from a given stream.
+    /// </summary>
+    /// <param name="serializable">The "this" instance.</param>
+    /// <param name="stream">The stream containing the json to deserialize</param>
+    public static async Task<T> ReadFromStreamAsync<T>(this T serializable, Stream stream) where T : IJsonSerializable, new()
+    {
+        return await ReadFromStreamAsync<T>(stream);
+    }
+
+    /// <summary>
+    /// Reads the current item from raw data.
+    /// </summary>
+    /// <param name="stream">The stream containing the json to deserialize</param>
+    public static async Task<T> ReadFromStreamAsync<T>(Stream stream) where T : IJsonSerializable, new()
+    {
+        var metadata = await JsonSerializer.DeserializeAsync<T>(stream);
+        metadata!.AfterDeserialize(metadata, "");
+        return metadata;
+    }
+
+    /// <summary>
+    /// Reads the current item from raw data.
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="data">The data containing the file to deserialize</param>
