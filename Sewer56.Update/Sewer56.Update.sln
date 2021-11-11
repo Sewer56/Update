@@ -21,15 +21,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Tests.Dummy"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Misc", "Sewer56.Update.Misc\Sewer56.Update.Misc.csproj", "{F65789A5-EBAF-4CE7-956D-AFD188635C12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Tool", "Sewer56.Update.Tool\Sewer56.Update.Tool.csproj", "{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Tool", "Sewer56.Update.Tool\Sewer56.Update.Tool.csproj", "{BFC01388-5AE0-41DC-B4D7-CBD0FBF9B4B8}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extras", "Extras", "{B775AF40-AD9D-4A16-9D8F-033795B3B22C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Extractors.SharpCompress", "Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj", "{958D57D6-6095-4781-8249-97BD515CEE50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Extractors.SharpCompress", "Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj", "{958D57D6-6095-4781-8249-97BD515CEE50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Resolvers.GitHub", "Resolvers\Sewer56.Update.Resolvers.GitHub\Sewer56.Update.Resolvers.GitHub.csproj", "{D854213F-34EB-4196-AF54-BB463BF7C116}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Resolvers.GitHub", "Resolvers\Sewer56.Update.Resolvers.GitHub\Sewer56.Update.Resolvers.GitHub.csproj", "{D854213F-34EB-4196-AF54-BB463BF7C116}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Resolvers.GameBanana", "Resolvers\Sewer56.Update.Resolvers.GameBanana\Sewer56.Update.Resolvers.GameBanana.csproj", "{2F45BF2A-C340-4341-A691-6CCB61189C0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Resolvers.GameBanana", "Resolvers\Sewer56.Update.Resolvers.GameBanana\Sewer56.Update.Resolvers.GameBanana.csproj", "{2F45BF2A-C340-4341-A691-6CCB61189C0B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Resolvers.NuGet", "Resolvers\Sewer56.Update.Resolvers.NuGet\Sewer56.Update.Resolvers.NuGet.csproj", "{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F45BF2A-C340-4341-A691-6CCB61189C0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{958D57D6-6095-4781-8249-97BD515CEE50} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 		{D854213F-34EB-4196-AF54-BB463BF7C116} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 		{2F45BF2A-C340-4341-A691-6CCB61189C0B} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
+		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61C6447A-EA3D-4933-80BC-38F3D6ED8FBA}

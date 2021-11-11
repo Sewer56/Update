@@ -17,13 +17,4 @@ public static class ThrowHelpers
         if (string.IsNullOrEmpty(text))
             throw makeException();
     }
-
-    /// <summary>
-    /// Throws an exception if an object is null.
-    /// </summary>
-    public static void ThrowIfNull<T>(object item, Func<T> makeException) where T : System.Exception
-    {
-        if (item == null)
-            throw makeException();
-    }
 }

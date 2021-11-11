@@ -26,7 +26,11 @@ public static class Assets
     public static readonly string AddMissingFileFolder = Path.Combine(AssetsFolder, "Add Missing File Test");
     public static readonly string AddMissingFileFolderOriginal = Path.Combine(AddMissingFileFolder, "Original");
     public static readonly string AddMissingFileFolderTarget = Path.Combine(AddMissingFileFolder, "New");
-        
+
+    public static readonly string NuGetLegacyPackageTestsFolder = Path.Combine(AssetsFolder, "NuGet Legacy Package Tests");
+    public static readonly string NuGetLegacyPackage = Path.Combine(NuGetLegacyPackageTestsFolder, "Package1.0Legacy.nupkg");
+    public static readonly string NuGetLegacyPackageOriginalFiles = ManyFileFolderOriginal;
+
     public static readonly string TempFolder = Path.Combine(Paths.ProgramFolder, "Temp");
 
     static Assets()

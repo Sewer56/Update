@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Packaging.Interfaces;
+using Sewer56.Update.Packaging.Structures;
 using SharpCompress.Common;
 using SharpCompress.Writers;
 
@@ -28,7 +29,7 @@ public class SharpCompressArchiver : IPackageArchiver
     }
 
     /// <inheritdoc />
-    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, PackageMetadata metadata, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         using Stream stream = File.OpenWrite(destPath);
         using var writer = WriterFactory.Open(stream, _archiveType, _writerOptions);

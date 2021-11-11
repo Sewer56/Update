@@ -18,7 +18,8 @@ Note: This is the default archiver and will be used if none is specified.
 // builder == ReleaseBuilder
 var metadata = await builder.BuildAsync(new BuildArgs()
 {
-   FileName = "Package",
-     OutputFolder = this.OutputFolder,
+    FileName = "Package",
+    OutputFolder = this.OutputFolder,
     PackageCompressor = new ZipPackageCompressor() // <=======
+}
 ```

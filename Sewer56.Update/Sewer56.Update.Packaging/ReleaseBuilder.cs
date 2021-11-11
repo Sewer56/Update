@@ -135,7 +135,7 @@ public class ReleaseBuilder<T> where T : class
         });
 
         packageFiles.Add(packageMetadata.GetDefaultFileName());
-        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), progress);
+        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), packageMetadata, progress);
     }
 
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]

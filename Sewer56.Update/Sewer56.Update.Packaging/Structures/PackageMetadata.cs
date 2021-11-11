@@ -19,7 +19,7 @@ namespace Sewer56.Update.Packaging.Structures;
 /// <summary>
 /// Contains metadata for a singular package.
 /// </summary>
-public class PackageMetadata<T> : IJsonSerializable where T : class
+public class PackageMetadata : IJsonSerializable
 {
     /// <summary />
     public string GetDefaultFileName() => "Sewer56.Update.Metadata.json";
@@ -57,12 +57,6 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     public DeltaPackageMetadata? DeltaData { get; set; }
 
     /// <summary>
-    /// Stores extra data.
-    /// Contents are specific to package consumer.
-    /// </summary>
-    public T? ExtraData { get; set; }
-    
-    /// <summary>
     /// Internal use only (but required for serialization :/).
     /// Please use the static methods.
     /// </summary>
@@ -83,7 +77,7 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
         if (Hashes == null)
         {
             mismatchFiles = new List<string>();
-            missingFiles  = new List<string>();
+            missingFiles = new List<string>();
             return true;
         }
 
@@ -159,11 +153,23 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
     {
         // Dangerous! Reinterpret cast!
         // Do not use code depending on `T`.
-        var metadata  = Unsafe.As<PackageMetadata<Empty>>(thisItem);
+        var metadata = Unsafe.As<PackageMetadata<Empty>>(thisItem);
         var directory = Path.GetDirectoryName(filePath);
         metadata.FolderPath = directory;
         metadata.DeltaData?.PatchData.Initialize(directory);
     }
+}
+
+/// <summary>
+/// Contains metadata for a singular package.
+/// </summary>
+public class PackageMetadata<T> : PackageMetadata where T : class
+{
+    /// <summary>
+    /// Stores extra data.
+    /// Contents are specific to package consumer.
+    /// </summary>
+    public T? ExtraData { get; set; }
 
     /// <summary>
     /// Reads the current item from a Json Directory.
@@ -190,11 +196,11 @@ public class PackageMetadata<T> : IJsonSerializable where T : class
 
         return new PackageMetadata<T>()
         {
-            FolderPath    = directory,
-            Version       = version,
-            Hashes        = hashes,
-            Type          = packageType,
-            ExtraData     = data,
+            FolderPath = directory,
+            Version = version,
+            Hashes = hashes,
+            Type = packageType,
+            ExtraData = data,
             IgnoreRegexes = ignoreRegexes
         };
     }

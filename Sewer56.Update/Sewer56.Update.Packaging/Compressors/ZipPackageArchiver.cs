@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
+using Sewer56.Update.Packaging.Structures;
 
 namespace Sewer56.Update.Packaging.Compressors;
 
@@ -16,7 +17,7 @@ namespace Sewer56.Update.Packaging.Compressors;
 public class ZipPackageArchiver : IPackageArchiver
 {
     /// <inheritdoc />
-    public async Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public async Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, PackageMetadata metadata, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         await using var zipStream = new FileStream(destPath, FileMode.Create);
         using var zipFile  = new ZipArchive(zipStream, ZipArchiveMode.Update);
