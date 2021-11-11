@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Submodules\Sewer56.DeltaPatchGenerators\Sewer56.DeltaPatchGenerator.Lib\Sewer56.DeltaPatchGenerator.Lib.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
   </ItemGroup>

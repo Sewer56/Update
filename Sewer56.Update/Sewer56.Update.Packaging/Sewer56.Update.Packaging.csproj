@@ -9,7 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Submodules\Sewer56.DeltaPatchGenerators\Sewer56.DeltaPatchGenerator.Lib\Sewer56.DeltaPatchGenerator.Lib.csproj" />
+    <PackageReference Include="Sewer56.DeltaPatchGenerator" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
   </ItemGroup>
 
