@@ -11,7 +11,7 @@ curl -L -O https://github.com/Sewer56/Update/releases/latest/download/Sewer56.Up
 unzip Sewer56.Update.Tool.zip
 
 # To run the tool use:
-dotnet Sewer56.Update.Tool.dll --copypackagespath "Copy.csv" --outputpath Release
+dotnet Sewer56.Update.Tool.dll /* Arguments */
 ```
 
 Refer to [Release Creation](./release-creation.md) on how to create a release using the CLI.
