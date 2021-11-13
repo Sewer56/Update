@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SevenZipSharp\Sewer56.Update.Extractors.SevenZipSharp.csproj" />
     <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj" />
     <ProjectReference Include="..\Resolvers\Sewer56.Update.Resolvers.GameBanana\Sewer56.Update.Resolvers.GameBanana.csproj" />
     <ProjectReference Include="..\Resolvers\Sewer56.Update.Resolvers.GitHub\Sewer56.Update.Resolvers.GitHub.csproj" />

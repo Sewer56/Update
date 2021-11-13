@@ -43,4 +43,5 @@ nav:
       - Zip Package: archivers/zip-package.md
       - Sharpcompress: archivers/sharpcompress.md
       - NuGet: archivers/nuget.md
+      - SevenZipExtractor: archivers/sevenzipsharp.md
     

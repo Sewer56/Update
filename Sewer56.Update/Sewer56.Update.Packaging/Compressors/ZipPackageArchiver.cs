@@ -22,8 +22,8 @@ public class ZipPackageArchiver : IPackageArchiver
     {
         await using var zipStream = new FileStream(destPath, FileMode.Create);
         using var zipFile  = new ZipArchive(zipStream, ZipArchiveMode.Create);
+
         var progressSlicer = new ProgressSlicer(progress);
-        
         for (var x = 0; x < relativeFilePaths.Count; x++)
         {
             var relativePath    = relativeFilePaths[x];
