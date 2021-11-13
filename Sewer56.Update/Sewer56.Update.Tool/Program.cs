@@ -5,9 +5,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
+using FluentValidation;
+using Sewer56.Update.Extractors.SharpCompress;
 using Sewer56.Update.Packaging;
+using Sewer56.Update.Packaging.Compressors;
+using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
+using Sewer56.Update.Resolvers.NuGet;
+using Sewer56.Update.Tool.Options;
+using Sewer56.Update.Tool.Options.Groups;
+using Sewer56.Update.Tool.Validation;
+using SharpCompress.Common;
+using SharpCompress.Writers;
 
 namespace Sewer56.Update.Tool;
 
@@ -33,12 +43,18 @@ internal class Program
 
     private static async Task CreateDeltaPackage(CreateDeltaPackageOptions options)
     {
+        var validator = new CreateDeltaPackageValidator();
+        validator.ValidateAndThrow(options);
+
         var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
         await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath, options.LastVersion, options.Version, null, ignoreRegexes);
     }
 
     private static async Task CreateCopyPackage(CreateCopyPackageOptions options)
     {
+        var validator = new CreateCopyPackageOptionsValidator();
+        validator.ValidateAndThrow(options);
+
         var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
         await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes);
     }
@@ -48,6 +64,9 @@ internal class Program
     /// </summary>
     private static async Task CreateRelease(CreateReleaseOptions releaseOptions)
     {
+        var validator = new CreateReleaseOptionsValidator();
+        validator.ValidateAndThrow(releaseOptions);
+
         var existingPackages = string.IsNullOrEmpty(releaseOptions.ExistingPackagesPath) ? new List<string>() : (await File.ReadAllLinesAsync(releaseOptions.ExistingPackagesPath)).ToList();
         Directory.CreateDirectory(releaseOptions.OutputPath);
 
@@ -65,8 +84,20 @@ internal class Program
         await builder.BuildAsync(new BuildArgs()
         {
             FileName = releaseOptions.PackageName,
-            OutputFolder = releaseOptions.OutputPath
+            OutputFolder = releaseOptions.OutputPath,
+            PackageArchiver = GetArchiver(releaseOptions)
         });
+    }
+
+    private static IPackageArchiver GetArchiver(CreateReleaseOptions releaseOptions)
+    {
+        return releaseOptions.Archiver switch
+        {
+            Archiver.Zip => new ZipPackageArchiver(),
+            Archiver.NuGet => new NuGetPackageArchiver(releaseOptions.GetArchiver()),
+            Archiver.SharpCompress => releaseOptions.SharpCompressFormat.GetArchiver(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     /// <summary>
@@ -81,6 +112,7 @@ internal class Program
             help.AutoVersion = false;
             help.AddDashesToOption = true;
             help.AddEnumValuesToHelpText = true;
+            help.AddNewLineBetweenHelpSections = true;
             help.AdditionalNewLineAfterOption = true;
             return HelpText.DefaultParsingErrorsHandler(options, help);
         }, example => example, true);

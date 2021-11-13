@@ -8,10 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
+    <PackageReference Include="FluentValidation" Version="10.3.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj" />
+    <ProjectReference Include="..\Resolvers\Sewer56.Update.Resolvers.NuGet\Sewer56.Update.Resolvers.NuGet.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Options\Groups\" />
   </ItemGroup>
 
 </Project>
