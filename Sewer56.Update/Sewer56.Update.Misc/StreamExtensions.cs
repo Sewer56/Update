@@ -50,7 +50,7 @@ public static class StreamExtensions
             bytesCopied = await source.CopyBufferedToAsync(destination, buffer.Array, cancellationToken);
             totalBytesCopied += bytesCopied;
             if (supportsLength)
-                progress?.Report(1.0 * totalBytesCopied / source.Length);
+                progress?.Report((double) totalBytesCopied / source.Length);
         } 
         while (bytesCopied > 0);
 

@@ -71,6 +71,7 @@ public class ReleaseBuilder<T> where T : class
         var metadataBuilder = new ReleaseMetadataBuilder<T>();
         var progressMixer   = new ProgressSlicer(progress);
         var singleItemProgress = (double) 1 / Items.Count;
+        var tasks = new List<Task>();
 
         for (var x = 0; x < Items.Count; x++)
         {
@@ -79,17 +80,18 @@ public class ReleaseBuilder<T> where T : class
             switch (item)
             {
                 case ExistingPackageBuilderItem existingPackageItem:
-                    await BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
+                    tasks.Add(BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress));
                     break;
                 case CopyBuilderItem<T> copyBuilderItem:
-                    await BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
+                    tasks.Add(BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress));
                     break;
                 case DeltaBuilderItem<T> deltaBuilderItem:
-                    await BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
+                    tasks.Add(BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress));
                     break;
             }
         }
 
+        await Task.WhenAll(tasks);
         var metadata = metadataBuilder.Build();
         await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName);
         return metadata;
@@ -105,8 +107,8 @@ public class ReleaseBuilder<T> where T : class
     {
         using var packageOutputPath = new TemporaryFolderAllocation();
         var deltaProgressMixer      = new ProgressSlicer(itemProgress);
-        var deltaProgress           = deltaProgressMixer.Slice(0.7);
-        var compressProgress        = deltaProgressMixer.Slice(0.3);
+        var deltaProgress           = deltaProgressMixer.Slice(0.3);
+        var compressProgress        = deltaProgressMixer.Slice(0.7);
 
         var packageMetadata         = await Package<T>.CreateDeltaAsync(deltaBuilderItem.PreviousVersionFolder, deltaBuilderItem.FolderPath, packageOutputPath.FolderPath,
             deltaBuilderItem.PreviousVersion, deltaBuilderItem.Version, deltaBuilderItem.Data, deltaBuilderItem.IgnoreRegexes,
@@ -135,7 +137,11 @@ public class ReleaseBuilder<T> where T : class
         });
 
         packageFiles.Add(packageMetadata.GetDefaultFileName());
-        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), packageMetadata, progress);
+        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), new CreateArchiveExtras()
+        {
+            Metadata = packageMetadata,
+            TotalUncompressedSize = IPackageArchiver.GetTotalFileSize(packageFiles, packageMetadata.FolderPath!)
+        }, progress);
     }
 
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]

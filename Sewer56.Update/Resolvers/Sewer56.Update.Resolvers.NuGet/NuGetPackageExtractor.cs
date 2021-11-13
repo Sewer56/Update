@@ -35,11 +35,12 @@ public class NuGetPackageExtractor : IPackageExtractor
         await using var fileStream = new FileStream(sourceFilePath, FileMode.Open);
         using var reader           = new PackageArchiveReader(fileStream);
         var allFiles               = GetFiles(reader, out string contentFolder);
+        var singleItemProgress     = 1.0 / allFiles.Length;
 
         var mixer = new ProgressSlicer(progress);
         foreach (var file in allFiles)
         {
-            var slicedProgress = mixer.Slice((float)1 / allFiles.Length);
+            var slicedProgress = mixer.Slice(singleItemProgress);
             var relativePath   = contentFolder.Length == 0 ? file : Paths.GetRelativePath(file, contentFolder);
             var destFilePath   = Path.Combine(destDirPath, relativePath);
             await ExtractFileAsync(file, destFilePath, reader, slicedProgress, cancellationToken);

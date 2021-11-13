@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ using Sewer56.Update.Tool.Options.Groups;
 using Sewer56.Update.Tool.Validation;
 using SharpCompress.Common;
 using SharpCompress.Writers;
+using ShellProgressBar;
 
 namespace Sewer56.Update.Tool;
 
@@ -81,12 +83,14 @@ internal class Program
         }
 
         // Act
+        using var progressBar = new ShellProgressBar.ProgressBar(10000, "Building Release");
+
         await builder.BuildAsync(new BuildArgs()
         {
             FileName = releaseOptions.PackageName,
             OutputFolder = releaseOptions.OutputPath,
             PackageArchiver = GetArchiver(releaseOptions)
-        });
+        }, progressBar.AsProgress<double>());
     }
 
     private static IPackageArchiver GetArchiver(CreateReleaseOptions releaseOptions)

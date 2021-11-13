@@ -27,12 +27,12 @@ public class NuGetPackageArchiver : IPackageArchiver
     }
 
     /// <inheritdoc />
-    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, PackageMetadata metadata, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, CreateArchiveExtras extras, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         var writer = new PackageBuilder(false)
         {
             Id = _settings.Id,
-            Version = new NuGetVersion(metadata.Version),
+            Version = new NuGetVersion(extras.Metadata.Version),
             Description = _settings.Description
         };
         

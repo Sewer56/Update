@@ -8,6 +8,7 @@ using System.Threading;
 using Sewer56.DeltaPatchGenerator.Lib;
 using Sewer56.DeltaPatchGenerator.Lib.Model;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.IO;
 
 namespace Sewer56.Update.Packaging;

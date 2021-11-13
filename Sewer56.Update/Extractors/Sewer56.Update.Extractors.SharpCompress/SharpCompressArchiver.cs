@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
 using SharpCompress.Common;
@@ -29,16 +30,19 @@ public class SharpCompressArchiver : IPackageArchiver
     }
 
     /// <inheritdoc />
-    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, PackageMetadata metadata, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public Task CreateArchiveAsync(List<string> relativeFilePaths, string baseDirectory, string destPath, CreateArchiveExtras extras, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         using Stream stream = File.OpenWrite(destPath);
         using var writer = WriterFactory.Open(stream, _archiveType, _writerOptions);
+        var progressSlicer = new ProgressSlicer(progress);
 
         for (var x = 0; x < relativeFilePaths.Count; x++)
         {
-            progress?.Report((float) x / relativeFilePaths.Count);
-            var fullPath = Paths.AppendRelativePath(relativeFilePaths[x], baseDirectory);
-            writer.Write(relativeFilePaths[x], fullPath);
+            var fullPath           = Paths.AppendRelativePath(relativeFilePaths[x], baseDirectory);
+            using var sourceStream = File.Open(fullPath, FileMode.Open);
+            var slice = progressSlicer.Slice((double) sourceStream.Length / extras.TotalUncompressedSize);
+            writer.Write(relativeFilePaths[x], sourceStream);
+            slice.Report(1);
         }
 
         // Write Format to End of Stream
