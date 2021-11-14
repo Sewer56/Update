@@ -67,9 +67,13 @@ internal class Program
     /// </summary>
     private static async Task CreateRelease(CreateReleaseOptions releaseOptions)
     {
+        // Validate and set defaults.
         var validator = new CreateReleaseOptionsValidator();
         validator.ValidateAndThrow(releaseOptions);
+        if (releaseOptions.MaxParallelism == CreateReleaseOptions.DefaultInt)
+            releaseOptions.MaxParallelism = Environment.ProcessorCount;
 
+        // Get in there!
         var existingPackages = string.IsNullOrEmpty(releaseOptions.ExistingPackagesPath) ? new List<string>() : (await File.ReadAllLinesAsync(releaseOptions.ExistingPackagesPath)).ToList();
         Directory.CreateDirectory(releaseOptions.OutputPath);
 
@@ -90,7 +94,8 @@ internal class Program
         {
             FileName = releaseOptions.PackageName,
             OutputFolder = releaseOptions.OutputPath,
-            PackageArchiver = GetArchiver(releaseOptions)
+            PackageArchiver = GetArchiver(releaseOptions),
+            MaxParallelism = releaseOptions.MaxParallelism
         }, progressBar.AsProgress<double>());
     }
 

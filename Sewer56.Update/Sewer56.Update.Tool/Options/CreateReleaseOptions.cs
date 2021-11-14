@@ -8,6 +8,8 @@ namespace Sewer56.Update.Tool.Options;
 [Verb("CreateRelease", HelpText = "Creates a new release.")]
 internal class CreateReleaseOptions : ISharpCompressOptions, INuGetOptions, ISevenZipSharpOptions
 {
+    public const int DefaultInt = -1;
+
     [Option(Required = false, HelpText = "Path to a text file with file paths to existing packages (1 path per line). Paths should point to uncompressed folders.")]
     public string ExistingPackagesPath { get; internal set; }
 
@@ -19,6 +21,9 @@ internal class CreateReleaseOptions : ISharpCompressOptions, INuGetOptions, ISev
 
     [Option(Required = false, HelpText = "The archiver to use for archiving the content.", Default = Archiver.Zip)]
     public Archiver Archiver { get; internal set; }
+
+    [Option(Required = false, HelpText = "Maximum number of parallel compression tasks.", Default = DefaultInt)]
+    public int MaxParallelism { get; internal set; }
 
     /* SharpCompress Specific */
     public SharpCompressFormat SharpCompressFormat { get; set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Misc;
@@ -71,29 +72,46 @@ public class ReleaseBuilder<T> where T : class
         var metadataBuilder = new ReleaseMetadataBuilder<T>();
         var progressMixer   = new ProgressSlicer(progress);
         var singleItemProgress = (double) 1 / Items.Count;
-        var tasks = new List<Task>();
+        using var concurrencySemaphore = new SemaphoreSlim(args.MaxParallelism);
+        Task? task = default;
 
         for (var x = 0; x < Items.Count; x++)
         {
+            await concurrencySemaphore.WaitAsync();
             var item = Items[x];
             var itemProgress = progressMixer.Slice(singleItemProgress);
             switch (item)
             {
                 case ExistingPackageBuilderItem existingPackageItem:
-                    tasks.Add(BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress));
+                    task = BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
                     break;
                 case CopyBuilderItem<T> copyBuilderItem:
-                    tasks.Add(BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress));
+                    task = BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
                     break;
                 case DeltaBuilderItem<T> deltaBuilderItem:
-                    tasks.Add(BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress));
+                    task = BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
                     break;
             }
+
+            if (task == null)
+            {
+                concurrencySemaphore.Release();
+                continue;
+            }
+
+            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            task.ContinueWith(task1 =>
+            {
+                concurrencySemaphore.Release();
+            });
         }
 
-        await Task.WhenAll(tasks);
+        if (task != null)
+            await task;
+        
         var metadata = metadataBuilder.Build();
         await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName);
+        progress?.Report(1);
         return metadata;
     }
 
@@ -177,6 +195,11 @@ public class ReleaseBuilder<T> where T : class
 public class BuildArgs
 {
     /// <summary>
+    /// Default parallelism setting; 
+    /// </summary>
+    public const int DefaultParallelism = -1;
+
+    /// <summary>
     /// The file name for the current release, no extension.
     /// This name will be padded with version info.
     /// It may be shortened.
@@ -206,11 +229,19 @@ public class BuildArgs
     public Func<string, string>? FileNameFilter { get; set; }
 
     /// <summary>
+    /// Maximum number of concurrent compress tasks.
+    /// </summary>
+    public int MaxParallelism { get; set; } = DefaultParallelism;
+
+    /// <summary>
     /// Validates whether the build arguments are correct.
     /// </summary>
     public void Validate()
     {
         ThrowHelpers.ThrowIfNullOrEmpty(FileName, () => new BuilderValidationFailedException($"File name was Null or Empty ({nameof(BuildArgs)}.{nameof(FileName)}) but should not be."));
         ThrowHelpers.ThrowIfNullOrEmpty(OutputFolder, () => new BuilderValidationFailedException($"Output folder name was Null or Empty ({nameof(BuildArgs)}.{nameof(OutputFolder)}) but should not be."));
+
+        if (MaxParallelism == DefaultParallelism)
+            MaxParallelism = Environment.ProcessorCount;
     }
 }
