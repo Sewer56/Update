@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using CommandLine;
+using SevenZip;
 using Sewer56.Update.Tool.Options.Groups;
 
 namespace Sewer56.Update.Tool.Options;
 
 [Verb("CreateRelease", HelpText = "Creates a new release.")]
-internal class CreateReleaseOptions : ISharpCompressOptions, INuGetOptions
+internal class CreateReleaseOptions : ISharpCompressOptions, INuGetOptions, ISevenZipSharpOptions
 {
     [Option(Required = false, HelpText = "Path to a text file with file paths to existing packages (1 path per line). Paths should point to uncompressed folders.")]
     public string ExistingPackagesPath { get; internal set; }
@@ -26,6 +27,11 @@ internal class CreateReleaseOptions : ISharpCompressOptions, INuGetOptions
     public string NuGetId { get; set; }
     public string NuGetDescription { get; set; }
     public IEnumerable<string> NuGetAuthors { get; set; }
+
+    /* SevenZipSharp Specific */
+    public OutArchiveFormat SevenZipSharpArchiveFormat { get; set; }
+    public CompressionLevel SevenZipSharpCompressionLevel { get; set; }
+    public CompressionMethod SevenZipSharpCompressionMethod { get; set; }
 }
 
 public enum Archiver
@@ -33,4 +39,5 @@ public enum Archiver
     Zip,
     NuGet,
     SharpCompress,
+    SevenZipSharp
 }

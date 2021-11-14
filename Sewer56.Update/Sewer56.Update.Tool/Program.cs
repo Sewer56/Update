@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
 using FluentValidation;
+using Sewer56.Update.Extractors.SevenZipSharp;
 using Sewer56.Update.Extractors.SharpCompress;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Compressors;
@@ -100,6 +101,12 @@ internal class Program
             Archiver.Zip => new ZipPackageArchiver(),
             Archiver.NuGet => new NuGetPackageArchiver(releaseOptions.GetArchiver()),
             Archiver.SharpCompress => releaseOptions.SharpCompressFormat.GetArchiver(),
+            Archiver.SevenZipSharp => new SevenZipSharpArchiver(new SevenZipSharpArchiverSettings()
+            {
+                CompressionLevel = releaseOptions.SevenZipSharpCompressionLevel,
+                ArchiveFormat = releaseOptions.SevenZipSharpArchiveFormat,
+                CompressionMethod = releaseOptions.SevenZipSharpCompressionMethod
+            }),
             _ => throw new ArgumentOutOfRangeException()
         };
     }

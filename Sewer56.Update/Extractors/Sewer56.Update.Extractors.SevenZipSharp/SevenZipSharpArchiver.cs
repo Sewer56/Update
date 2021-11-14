@@ -38,10 +38,9 @@ public class SevenZipSharpArchiver : IPackageArchiver
             CompressionMethod = _settings.CompressionMethod,
         };
 
-        await using var archiveStream = new FileStream(destPath, FileMode.Create);
         compressor.Compressing += (sender, args) => { progress?.Report(args.PercentDone / 100.0); };
-        var fullFileNames = relativeFilePaths.Select(x => Paths.AppendRelativePath(x, baseDirectory)).ToArray();
-        await compressor.CompressFilesAsync(archiveStream, baseDirectory.Length + 1, fullFileNames);
+        var fullFileNames = relativeFilePaths.Select(x => Path.GetFullPath(Paths.AppendRelativePath(x, baseDirectory))).ToArray();
+        await compressor.CompressFilesAsync(destPath, Path.GetFullPath(baseDirectory).Length + 1, fullFileNames);
     }
 
     /// <inheritdoc />

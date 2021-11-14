@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SevenZipSharp\Sewer56.Update.Extractors.SevenZipSharp.csproj" />
     <ProjectReference Include="..\Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj" />
     <ProjectReference Include="..\Resolvers\Sewer56.Update.Resolvers.NuGet\Sewer56.Update.Resolvers.NuGet.csproj" />
     <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
