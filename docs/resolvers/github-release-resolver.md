@@ -1,5 +1,7 @@
 ## GitHub Release Resolver
 
+[Found In: `Sewer56.Update.Resolvers.GitHub`]  
+
 The `GitHub Release Resolver` reads releases from a given repository's Releases section.
 
 ### Example Usage

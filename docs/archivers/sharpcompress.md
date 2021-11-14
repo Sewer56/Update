@@ -1,5 +1,7 @@
 ## SharpCompress Archiver
 
+[Found In: `Sewer56.Update.Extractors.SharpCompress`]  
+
 The `SharpCompress Archiver` can be used to extract or archive packages using various container formats and compression algorithms.
 
 The implementation is actively tested with the following containers:  

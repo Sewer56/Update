@@ -1,5 +1,7 @@
 ## NuGet Package Resolver
 
+[Found In: `Sewer56.Update.Resolvers.NuGet`]  
+
 The `NuGet Package Resolver` obtains releases from a NuGet V3 Feed.  
 
 Note: *The NuGet implementation does not support delta updates.* 

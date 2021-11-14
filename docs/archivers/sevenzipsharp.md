@@ -1,6 +1,7 @@
 ## SevenZipSharp Archiver
 
-[Warning: ***Windows Only***]
+[Warning: ***Windows Only***]  
+[Found In: `Sewer56.Update.Extractors.SevenZipSharp`]  
 
 The `SevenZipSharp Archiver` is based on [Squid Box's fork of SevenZipSharp](https://github.com/squid-box/SevenZipSharp), a wrapper for the native `7z.dll` on Windows.
 

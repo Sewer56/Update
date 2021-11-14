@@ -1,5 +1,7 @@
 ## GameBanana Package Resolver
 
+[Found In: `Sewer56.Update.Resolvers.GameBanana`]  
+
 The `GameBanana Package Resolver` obtains releases from a GameBanana Mod page.
 
 ### Example Usage

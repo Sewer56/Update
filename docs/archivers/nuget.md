@@ -1,5 +1,7 @@
 ## NuGet Package Archiver
 
+[Found In: `Sewer56.Update.Resolvers.NuGet`]  
+
 The `NuGet Package Archiver` can be used to extract or archive NuGet compatible packages with the `.nupkg` extension.
 
 ### Example Usage (Extract)
