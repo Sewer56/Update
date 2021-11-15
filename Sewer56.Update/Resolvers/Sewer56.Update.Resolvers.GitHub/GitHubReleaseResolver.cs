@@ -65,16 +65,30 @@ public class GitHubReleaseResolver : IPackageResolver
     {
         var releases   = await _client.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
         var release    = releases.FirstOrDefault(x => new NuGetVersion(x.TagName).Equals(version));
-        var releaseMetadataAsset = release.Assets.First(x => x.Name == _commonResolverSettings.MetadataFileName);
+        var releaseMetadataAsset = release.Assets.FirstOrDefault(x => x.Name == _commonResolverSettings.MetadataFileName);
 
         using var webClient      = new WebClient();
-        var releaseMetadataBytes = await webClient.DownloadDataTaskAsync(releaseMetadataAsset.BrowserDownloadUrl);
-        var releaseMetadata      = Singleton<ReleaseMetadata>.Instance.ReadFromData(releaseMetadataBytes);
+        string? releaseItemName  = null;
 
-        var releaseItem  = releaseMetadata.GetRelease(version.ToString(), verificationInfo);
-        var packageAsset = release.Assets.First(x => x.Name == releaseItem.FileName);
+        // Find Release File
+        if (releaseMetadataAsset != null)
+        {
+            var releaseMetadataBytes = await webClient.DownloadDataTaskAsync(releaseMetadataAsset.BrowserDownloadUrl);
+            var releaseMetadata      = Singleton<ReleaseMetadata>.Instance.ReadFromData(releaseMetadataBytes);
+            releaseItemName          = releaseMetadata.GetRelease(version.ToString(), verificationInfo)!.FileName;
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(_configuration.LegacyFallbackPattern))
+                releaseItemName = release.Assets.FirstOrDefault(asset => WildcardPattern.IsMatch(asset.Name, _configuration.LegacyFallbackPattern))?.Name;
+        }
 
-        //Create a WebRequest to get the file & create a response. 
+        if (string.IsNullOrEmpty(releaseItemName))
+            throw new GitHubResolverException($"Failed to find a download at {_configuration.UserName}/{_configuration.RepositoryName}");
+
+        var packageAsset = release.Assets.First(x => x.Name == releaseItemName);
+
+        // Create a WebRequest to get the file & create a response. 
         var fileReq  = WebRequest.CreateHttp(packageAsset.BrowserDownloadUrl);
         var fileResp = await fileReq.GetResponseAsync();
         await using var responseStream = fileResp.GetResponseStream();

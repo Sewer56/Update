@@ -14,4 +14,10 @@ public class GitHubResolverConfiguration
     /// The repository name associated with the resolver.
     /// </summary>
     public string? RepositoryName { get; set; }
+
+    /// <summary>
+    /// Allows you to specify a Wildcard pattern (e.g. *Update.zip) for the file to be downloaded.
+    /// This is a fallback used in cases no Release Metadata file can be found.
+    /// </summary>
+    public string? LegacyFallbackPattern { get; set; } = null;
 }

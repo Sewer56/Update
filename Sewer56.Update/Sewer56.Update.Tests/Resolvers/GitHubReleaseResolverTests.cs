@@ -106,4 +106,25 @@ public class GitHubReleaseResolverTests
         // Assert
         Assert.True(File.Exists(packageFilePath));
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanDownloadItem_WithFallbackPattern()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+
+        // Act
+        ResolverConfiguration.LegacyFallbackPattern = "*.pkg";
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration, new CommonPackageResolverSettings()
+        {
+            MetadataFileName = "DoesNotActuallyExist.json",
+            AllowPrereleases = false
+        });
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        var version = versions.Find(x => x.Equals(new NuGetVersion("3.0")));
+        await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(File.Exists(packageFilePath));
+    }
 }
