@@ -6,6 +6,19 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
+    <Description>Automatic Update framework for .NET Core based Applications with support for delta updates.
+This library holds the core logic for checking updates, downloading them and applying them.
+
+This framework is a hard fork of Onova.</Description>
+    <Copyright></Copyright>
+    <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
+    <PackageIcon>Merge.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
+    <PackageTags>update;netcore;dotnet</PackageTags>
+    <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Authors>Sewer56, Tyrrrz</Authors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,6 +33,17 @@
   <ItemGroup>
     <Folder Include="Interfaces\" />
     <Folder Include="Extractors\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\Merge.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

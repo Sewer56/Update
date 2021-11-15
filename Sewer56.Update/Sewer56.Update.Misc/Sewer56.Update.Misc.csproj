@@ -5,6 +5,26 @@
     <LangVersion>preview</LangVersion>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
+    <Authors>Sewer56, Tyrrrz</Authors>
+    <Description>The miscellanous stuff used in Sewer56.Update.
+Separated out to avoid unnecessary dependency creep when only certain library workloads are needed.</Description>
+    <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
+    <PackageIcon>Merge.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>misc</PackageTags>
+    <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\Merge.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>

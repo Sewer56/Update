@@ -1,3 +1,12 @@
+<div align="center">
+	<h1>Update</h1>
+	<img src="./Sewer56.Update/Merge.png" width="150" align="center" />
+	<br/> <br/>
+	<strong>An Extensible Update Library</strong>
+	<br/>
+    For anything, from `CurrentProgram` to Plugins.
+</div>
+
 ## Documentation
 
 For the latest documentation for Update and more details about the library, please see the dedicated [documentation site](https://sewer56.dev/Update/).
@@ -34,3 +43,6 @@ Consider using the original [Onova](https://github.com/Tyrrrz/Onova) (or another
 ## Etymology
 
 Update is a pun on the name [Onova](https://github.com/Tyrrrz/Onova), which is the Ukrainian word for "update" (noun).
+
+## Icon
+[Merge](https://thenounproject.com/search/?q=merge&i=1404538) by Creaticca Creative Agency from the Noun Project

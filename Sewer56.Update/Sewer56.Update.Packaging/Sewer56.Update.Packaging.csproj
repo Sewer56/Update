@@ -6,7 +6,29 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
+    <Description>The packaging component of Sewer56.Update.
+Contains the necessary component for creating packages and releases.</Description>
+    <Copyright></Copyright>
+    <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
+    <Authors>Sewer56</Authors>
+    <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIcon>Merge.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
+    <PackageTags>update;netcore;dotnet;packaging</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\Merge.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Sewer56.DeltaPatchGenerator" Version="1.0.0" />

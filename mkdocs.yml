@@ -41,7 +41,7 @@ nav:
       - GameBanana Package Resolver: resolvers/gamebanana-package-resolver.md
     - Extractors & Archivers:
       - Zip Package: archivers/zip-package.md
-      - Sharpcompress: archivers/sharpcompress.md
+      - SharpCompress: archivers/sharpcompress.md
       - NuGet: archivers/nuget.md
-      - SevenZipExtractor: archivers/sevenzipsharp.md
+      - SevenZipSharp: archivers/sevenzipsharp.md
     

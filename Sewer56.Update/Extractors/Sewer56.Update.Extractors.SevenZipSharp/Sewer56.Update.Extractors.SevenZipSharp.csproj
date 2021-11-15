@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -6,6 +6,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Description>SevenZipSharp integration for Sewer56.Update.</Description>
+    <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
+    <Authors>Sewer56</Authors>
+    <RepositoryType>https://github.com/Sewer56/Update</RepositoryType>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>

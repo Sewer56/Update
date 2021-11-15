@@ -6,6 +6,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Authors>Sewer56</Authors>
+    <Description>GitHub Releases integration for Sewer56.Update.</Description>
+    <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
