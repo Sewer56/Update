@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Versioning;
+using Sewer56.Update.Exceptions;
 using Sewer56.Update.Structures;
 
 namespace Sewer56.Update.Interfaces;
@@ -45,6 +46,7 @@ public interface IUpdateManager : IDisposable
     /// </summary>
     /// <param name="version">The version to upgrade the package to.</param>
     /// <param name="options">Options to use if the update needs to be performed out of process and application restarted.</param>
+    /// <exception cref="FileInUseException">One of the files to be patched is currently in use.</exception>
     /// <returns>Returns true if closing the process is required (out of process), else false.</returns>
     Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions options);
 }
