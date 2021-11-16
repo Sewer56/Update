@@ -1,20 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
-using Sewer56.Update.Extractors.SharpCompress;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
-using SharpCompress.Common;
-using SharpCompress.Writers;
 using Xunit;
 using Xunit.Abstractions;
 using SevenZip;
 using Sewer56.Update.Extractors.SevenZipSharp;
+using Sewer56.Update.Tests.TestUtilities;
 
 namespace Sewer56.Update.Tests.Extractors;
 
@@ -29,7 +24,7 @@ public class SevenZipSharpExtractorTests
         IOEx.TryDeleteDirectory(Assets.TempFolder);
     }
 
-    [Fact]
+    [WindowsOnlyFact]
     public async Task SevenZipCompressor_CanCompress()
     {
         var supportedFormats = new List<(OutArchiveFormat, List<(CompressionMethod, string)>)>()
