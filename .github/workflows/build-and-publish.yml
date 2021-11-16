@@ -66,6 +66,7 @@ jobs:
       
     - name: Publish Update Tool
       run: |
+        [System.IO.Directory]::CreateDirectory("$env:TOOLS_PATH")
         dotnet publish ./Sewer56.Update/Sewer56.Update.Tool/Sewer56.Update.Tool.csproj -c Release -o "./Temp/Update.Tool"
         [IO.Compression.ZipFile]::CreateFromDirectory("./Temp/Update.Tool", "$env:TOOLS_PATH/" + "Sewer56.Update.Tool.zip")
      
