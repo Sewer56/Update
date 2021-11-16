@@ -54,7 +54,7 @@ public class GitHubReleaseResolver : IPackageResolver
             result.Sort((a, b) => a.CompareTo(b));
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return new List<NuGetVersion>();
         }
@@ -63,9 +63,9 @@ public class GitHubReleaseResolver : IPackageResolver
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var releases   = await _client.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
+        var releases   = await _client!.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
         var release    = releases.FirstOrDefault(x => new NuGetVersion(x.TagName).Equals(version));
-        var releaseMetadataAsset = release.Assets.FirstOrDefault(x => x.Name == _commonResolverSettings.MetadataFileName);
+        var releaseMetadataAsset = release!.Assets.FirstOrDefault(x => x.Name == _commonResolverSettings.MetadataFileName);
 
         using var webClient      = new WebClient();
         string? releaseItemName  = null;

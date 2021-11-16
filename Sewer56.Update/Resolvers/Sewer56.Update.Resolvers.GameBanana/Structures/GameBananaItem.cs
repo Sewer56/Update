@@ -10,22 +10,22 @@ namespace Sewer56.Update.Resolvers.GameBanana.Structures;
 public class GameBananaItem
 {
     [JsonPropertyName("name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [JsonPropertyName("Owner().name")]
-    public string OwnerName { get; set; }
+    public string? OwnerName { get; set; }
 
     [JsonPropertyName("Url().sGetProfileUrl()")]
-    public string ProfileUrl { get; set; }
+    public string? ProfileUrl { get; set; }
 
     [JsonPropertyName("Updates().bSubmissionHasUpdates()")]
-    public bool HasUpdates { get; set; }
+    public bool? HasUpdates { get; set; }
 
     [JsonPropertyName("Updates().aGetLatestUpdates()")]
-    public GameBananaItemUpdate[] Updates { get; set; }
+    public GameBananaItemUpdate[]? Updates { get; set; }
 
     [JsonPropertyName("Files().aFiles()")]
-    public Dictionary<string, GameBananaItemFile> Files { get; set; }
+    public Dictionary<string, GameBananaItemFile>? Files { get; set; }
 
     public static async Task<GameBananaItem?> FromTypeAndIdAsync(string itemType, long itemId)
     {

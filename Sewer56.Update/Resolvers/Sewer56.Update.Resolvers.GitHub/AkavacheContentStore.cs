@@ -23,7 +23,7 @@ internal class AkavacheContentStore : ICacheStore
 
         Akavache.Registrations.Start(DatabaseName);
         var filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), DatabaseName, "Cache.db");
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
         Cache = new SQLitePersistentBlobCache(filePath);
     }
 
@@ -33,7 +33,7 @@ internal class AkavacheContentStore : ICacheStore
 
     public void Dispose() => Cache.Vacuum();
 
-    public async Task<HttpResponseMessage> GetValueAsync(CacheKey key)
+    public async Task<HttpResponseMessage?> GetValueAsync(CacheKey key)
     {
         var observable = Cache.Get(key.ToString());
         var buffer = await observable.Catch(Observable.Return<byte[]>(null!));

@@ -9,13 +9,13 @@ public class GameBananaItemUpdate
     private static readonly DateTime Epoch = new DateTime(1970, 1, 1);
 
     [JsonPropertyName("_sTitle")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     [JsonPropertyName("_aChangeLog")]
-    public GameBananaItemUpdateChange[] Changes { get; set; }
+    public GameBananaItemUpdateChange[]? Changes { get; set; }
 
     [JsonPropertyName("_sText")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     [JsonPropertyName("_tsDateAdded")]
     public long DateAddedLong { get; set; }

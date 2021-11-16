@@ -44,7 +44,10 @@ public class LocalPackageResolver : IPackageResolver
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
-        await using var sourceFile = File.Open(Path.Combine(_repositoryFolder, releaseItem!.FileName), FileMode.Open);
+        if (releaseItem == null)
+            throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
+
+        await using var sourceFile = File.Open(Path.Combine(_repositoryFolder, releaseItem.FileName), FileMode.Open);
         await using var targetFile = File.Open(destFilePath, FileMode.Create);
         await sourceFile.CopyToAsyncEx(targetFile, 262144, progress, cancellationToken);
     }

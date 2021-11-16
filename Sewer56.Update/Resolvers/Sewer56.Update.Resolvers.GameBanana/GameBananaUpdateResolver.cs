@@ -47,9 +47,12 @@ public class GameBananaUpdateResolver : IPackageResolver
         if (_gbItem == null)
             return;
 
+        if (_gbItem.Files == null)
+            throw new KeyNotFoundException("GameBanana did not return a file list for the given mod page.");
+
         // Download Metadata
         var metadataFile = GetGameBananaMetadataFile(_gbItem.Files, out var isZip);
-        if (metadataFile == null!)
+        if (metadataFile == null || string.IsNullOrEmpty(metadataFile.DownloadUrl))
             return;
 
         using var client = new WebClient();
@@ -72,21 +75,24 @@ public class GameBananaUpdateResolver : IPackageResolver
         if (_releases == null)
             return Task.FromResult(new List<NuGetVersion>());
         
-        return Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));
+        return Task.FromResult(_releases.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));
     }
 
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        if (_releases == null)
+        if (_releases == null || _gbItem == null)
             return;
 
-        var releaseItem      = _releases.GetRelease(version.ToString(), verificationInfo);
+        var releaseItem = _releases.GetRelease(version.ToString(), verificationInfo);
+        if (releaseItem == null)
+            throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
+
         var expectedFileName = GameBananaUtilities.GetFileNameStart(releaseItem.FileName);
-        var gbItemFile       = _gbItem.Files.FirstOrDefault(x => x.Value.FileName.StartsWith(expectedFileName, StringComparison.OrdinalIgnoreCase)).Value;
+        var gbItemFile       = _gbItem.Files!.FirstOrDefault(x => x.Value.FileName!.StartsWith(expectedFileName, StringComparison.OrdinalIgnoreCase)).Value;
 
         //Create a WebRequest to get the file & create a response. 
-        var fileReq  = WebRequest.CreateHttp(gbItemFile.DownloadUrl);
+        var fileReq  = WebRequest.CreateHttp(gbItemFile.DownloadUrl!);
         var fileResp = await fileReq.GetResponseAsync();
         await using var responseStream = fileResp.GetResponseStream();
         await using var targetFile = File.Open(destFilePath, System.IO.FileMode.Create);
@@ -98,7 +104,7 @@ public class GameBananaUpdateResolver : IPackageResolver
         var expectedFileName = GameBananaUtilities.GetFileNameStart(_commonResolverSettings.MetadataFileName);
         foreach (var file in files)
         {
-            if (!file.Value.FileName.StartsWith(expectedFileName))
+            if (!file.Value.FileName!.StartsWith(expectedFileName))
                 continue;
 
             isZip = Path.GetExtension(file.Value.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase);

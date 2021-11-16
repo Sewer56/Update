@@ -18,7 +18,7 @@ namespace Sewer56.Update.Resolvers.NuGet;
 /// </summary>
 public class NuGetPackageArchiver : IPackageArchiver
 {
-    public NuGetPackageArchiverSettings _settings;
+    private NuGetPackageArchiverSettings _settings;
 
     /// <summary/>
     public NuGetPackageArchiver(NuGetPackageArchiverSettings settings)

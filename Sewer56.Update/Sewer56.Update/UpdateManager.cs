@@ -239,6 +239,6 @@ public class UpdateManager<T> : IUpdateManager where T : class
             var assembly = ItemMetadata.FromEntryAssembly();
             return assembly.ExecutablePath == Updatee.ExecutablePath;
         }
-        catch (Exception e) { return false; }
+        catch (Exception) { return false; }
     }
 }

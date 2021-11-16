@@ -39,7 +39,7 @@ public static class Startup
             var lastProcess = Process.GetProcessById(startupParams.CurrentProcessId);
             lastProcess.WaitForExit();
         }
-        catch (ArgumentException e)
+        catch (ArgumentException)
         {
             /* Ignore if process already died. */
         }

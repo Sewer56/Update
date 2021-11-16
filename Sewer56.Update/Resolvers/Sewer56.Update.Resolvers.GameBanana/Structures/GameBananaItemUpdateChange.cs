@@ -6,8 +6,8 @@ namespace Sewer56.Update.Resolvers.GameBanana.Structures;
 public class GameBananaItemUpdateChange
 {
     [JsonPropertyName("cat")]
-    public string Category { get; set; }
+    public string? Category { get; set; }
 
     [JsonPropertyName("text")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 }
