@@ -11,6 +11,7 @@
     <Authors>Sewer56</Authors>
     <RepositoryType>https://github.com/Sewer56/Update</RepositoryType>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

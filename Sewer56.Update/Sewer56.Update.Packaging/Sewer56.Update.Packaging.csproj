@@ -17,6 +17,7 @@ Contains the necessary component for creating packages and releases.</Descriptio
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <PackageTags>update;netcore;dotnet;packaging</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -11,6 +11,7 @@
     <Description>SharpCompress integration for Sewer56.Update.</Description>
     <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

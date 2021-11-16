@@ -1,0 +1,104 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env: 
+  CHANGELOG_PATH: ./Publish/Changelog.md 
+  PUBLISH_PATH: ./Publish
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  RELEASE_TAG: ${{ github.GITHUB_REF }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: pwsh
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Print Environment Variables
+      run: |
+        echo "Changelog Path: $env:CHANGELOG_PATH"
+        echo "Publish Path: $env:PUBLISH_PATH"
+        echo "Is Release?: $env:IS_RELEASE"
+        echo "Release Tag: $env:RELEASE_TAG"
+    
+    - name: Setup .NET Core SDK (3.1)
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: 3.1.x
+    - name: Setup .NET Core SDK (5.0)
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: 5.0.x
+    - name: Setup .NET Core SDK (6.0.x)
+      uses: actions/setup-dotnet@v1.8.2
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+        
+    - name: Setup AutoChangelog
+      run: npm install -g auto-changelog
+      
+    - name: Get Dotnet Info
+      run: dotnet --info
+    - name: Restore dependencies
+      run: dotnet restore ./Sewer56.Update/Sewer56.Update.sln
+    - name: Build
+      run: dotnet build -c Release ./Sewer56.Update/Sewer56.Update.sln --no-restore
+    - name: Test
+      run: dotnet test -c Release ./Sewer56.Update/Sewer56.Update.sln --no-build --verbosity normal
+    - name: Create NuGet Package Artifacts
+      run: |
+        $items = Get-ChildItem -Path "." -Recurse | Where-Object { $_.Name -match "Sewer56.*.nupkg" }
+        foreach ($item in $items)
+        {
+          Write-Host "Moving $item"
+          Move-Item -Path $item -Destination "$env:PUBLISH_PATH"
+        }
+      
+    - name: Create Changelog (on Tag)
+      run: |
+        New-Item -ItemType Directory -Force -Path "$env:PUBLISH_PATH"
+        auto-changelog --sort-commits date --hide-credit --template keepachangelog --commit-limit false -u --starting-version "$env:RELEASE_TAG" -o "$env:CHANGELOG_PATH"
+      
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2.2.4
+      with:
+        # Artifact name
+        name: NuGet Packages
+        # A file, directory or wildcard pattern that describes what to upload
+        path: "$env:PUBLISH_PATH/*"
+        retention-days: 0
+        
+    - name: Upload to GitHub Releases
+      uses: softprops/action-gh-release@v0.1.14
+      if: env.IS_RELEASE == 'true'
+      with:
+        # Path to load note-worthy description of changes in release from
+        body_path: "$env:CHANGELOG_PATH"
+        # Newline-delimited list of path globs for asset files to upload
+        files: |
+          "$env:PUBLISH_PATH/*"
+        
+    - name: Upload to NuGet (on Tag)
+      env: 
+        NUGET_KEY: ${{ secrets.NUGET_KEY }}
+      if: env.IS_RELEASE == 'true'
+      run: |
+        $items = Get-ChildItem -Path "./Publish/*.nupkg"
+        Foreach ($item in $items)
+        {
+            Write-Host "Pushing $item"
+            ## dotnet nuget push -k "$env:NUGET_KEY" $item
+        }

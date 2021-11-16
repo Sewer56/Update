@@ -19,6 +19,7 @@ This framework is a hard fork of Onova.</Description>
     <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Sewer56, Tyrrrz</Authors>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

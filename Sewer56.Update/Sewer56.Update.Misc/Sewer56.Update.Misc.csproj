@@ -14,6 +14,7 @@ Separated out to avoid unnecessary dependency creep when only certain library wo
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>misc</PackageTags>
     <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
