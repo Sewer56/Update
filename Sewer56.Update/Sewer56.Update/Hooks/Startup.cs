@@ -21,7 +21,7 @@ public static class Startup
     /// A handler for command line arguments passed to the program.
     /// </summary>
     /// <returns>True if the process should exit, else false.</returns>
-    public static bool HandleCommandLineArgs(string[] args)
+    public static bool HandleCommandLineArgs(string[] args, bool printToConsoleOnError = true)
     {
         StartupParams? startupParams = null;
         for (var x = 0; x < args.Length; x++)
@@ -34,8 +34,15 @@ public static class Startup
             return false;
 
         // Wait for last process to finish.
-        var lastProcess = Process.GetProcessById(startupParams.CurrentProcessId);
-        lastProcess.WaitForExit();
+        try
+        {
+            var lastProcess = Process.GetProcessById(startupParams.CurrentProcessId);
+            lastProcess.WaitForExit();
+        }
+        catch (ArgumentException e)
+        {
+            /* Ignore if process already died. */
+        }
 
         // Copy out specified contents.
         IOEx.CopyDirectory(startupParams.PackageContentPath, startupParams.TargetDirectory);
