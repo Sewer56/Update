@@ -176,6 +176,18 @@ public class PackagingTests
     }
 
     [Fact]
+    public async Task CopyPackage_CanAddNewFiles()
+    {
+        // Act
+        await Package<Empty>.CreateAsync(Assets.AddMissingFileFolderTarget, PackageFolder, "1.0.1");
+        var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
+        metadata.Apply(ResultFolder);
+
+        // Assert
+        Assert.True(metadata.Verify(out _, out _, ResultFolder));
+    }
+
+    [Fact]
     public async Task DeltaPackage_CanAddNewFiles()
     {
         // Act
