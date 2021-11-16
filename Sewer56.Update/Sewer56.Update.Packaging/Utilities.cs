@@ -32,7 +32,7 @@ public static class Utilities
             var newPath = Paths.AppendRelativePath(file.RelativePath, targetDirectory);
             
             // Do not overwrite if not necessary.
-            if (!overWrite && File.Exists(newPath))
+            if (!overWrite && File.Exists(newPath) || !File.Exists(oldPath))
                 continue;
 
             createdDirectorySet.CreateDirectoryIfNeeded(Path.GetDirectoryName(newPath)!);
@@ -41,7 +41,8 @@ public static class Utilities
             while (File.Exists(newPath) && !IOEx.CheckFileAccess(newPath, FileMode.Open, FileAccess.Write))
                 Thread.Sleep(100);
             
-            File.Copy(oldPath, newPath, true);
+            if (oldPath != newPath)
+                File.Copy(oldPath, newPath, true);
         }
     }
 

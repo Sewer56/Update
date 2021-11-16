@@ -144,7 +144,7 @@ public class PackageMetadata : IJsonSerializable
         if (DeltaData == null)
             throw new NullReferenceException($"Expected {nameof(DeltaData)} to not be null but was null.");
 
-        CopyFiles(FolderPath!, sourceDirectory, false); // Copy non-patched files.
+        CopyFiles(targetDirectory, sourceDirectory, false); // Copy non-patched files.
         Patch.Apply(DeltaData.PatchData, sourceDirectory, targetDirectory);
     }
 

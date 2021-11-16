@@ -174,4 +174,16 @@ public class PackagingTests
         // Assert
         Assert.True(metadata.Verify(out _, out _, ResultFolder));
     }
+
+    [Fact]
+    public async Task DeltaPackage_CanAddNewFiles()
+    {
+        // Act
+        await Package<Empty>.CreateDeltaAsync(Assets.AddMissingFileFolderOriginal, Assets.AddMissingFileFolderTarget, PackageFolder, "1.0", "1.0.1");
+        var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
+        metadata.Apply(ResultFolder, Assets.AddMissingFileFolderOriginal);
+
+        // Assert
+        Assert.True(metadata.Verify(out _, out _, ResultFolder));
+    }
 }
