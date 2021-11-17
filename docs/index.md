@@ -59,7 +59,7 @@ If the data to be updated is the current application itself, the library runs an
 
 - The folder containing the application is writable (not read only). 
 
-This however is not yet actively tested.
+While I don't actively test non-Windows targets, the CI/CD builds and testing are actively ran against Ubuntu (Latest); so hopefully the library should work on other platforms.
 
 ## Etymology
 
