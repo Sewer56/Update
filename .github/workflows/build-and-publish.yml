@@ -140,5 +140,5 @@ jobs:
         Foreach ($item in $items)
         {
             Write-Host "Pushing $item"
-            ## dotnet nuget push -k "$env:NUGET_KEY" "$item"
+            dotnet nuget push -k "$env:NUGET_KEY" "$item"
         }
