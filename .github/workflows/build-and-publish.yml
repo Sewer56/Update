@@ -3,6 +3,8 @@ name: Build and Publish
 on:
   push:
     branches: [ main ]
+    tags:
+      - '*'
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -12,8 +14,8 @@ env:
   PUBLISH_CHANGELOG_PATH: ./Publish/Changelog.md 
   PUBLISH_PACKAGES_PATH: ./Publish/Packages
   PUBLISH_PATH: ./Publish
-  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') }}
-  RELEASE_TAG: ${{ github.GITHUB_REF }}
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+  RELEASE_TAG: ${{ github.ref_name }}
 
 jobs:
   build:
