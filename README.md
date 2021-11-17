@@ -4,7 +4,15 @@
 	<br/> <br/>
 	<strong>An Extensible Update Library</strong>
 	<br/>
-    For anything, from `CurrentProgram` to Plugins.
+	<p>For anything, from `CurrentProgram` to Plugins.</p>
+	<!-- Build -->
+	<a href="https://github.com/Sewer56/Update/actions/workflows/build-and-publish.yml">
+		<img src="https://img.shields.io/github/workflow/status/Sewer56/Update/Build%20and%20Publish" alt="Build" />
+	</a>
+	<!-- NuGet -->
+	<a href="https://www.nuget.org/packages/Sewer56.Update">
+		<img src="https://img.shields.io/nuget/v/Sewer56.Update" alt="NuGet" />
+	</a>
 </div>
 
 ## Documentation
