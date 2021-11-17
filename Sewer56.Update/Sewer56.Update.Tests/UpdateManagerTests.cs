@@ -128,6 +128,43 @@ public class UpdateManagerTests : IDisposable
     }
 
     [Fact]
+    public async Task PrepareUpdate_AllowsToReturnUpdateFolder()
+    {
+        using var dummyUpdatee = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.AddMissingFileFolderOriginal, dummyUpdatee.FolderPath);
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.AddMissingFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.AddMissingFileFolderTarget,
+            Version = "2.0"
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+        
+        // Act
+        var updateeMetadata = new ItemMetadata(NuGetVersion.Parse("1.0"), dummyUpdatee.FolderPath);
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(updateeMetadata, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+        
+        // Assert
+        Assert.False(updateManager.TryGetPackageContentDirPath(NuGetVersion.Parse("2.0"), out _));
+        await updateManager.PrepareUpdateAsync(NuGetVersion.Parse("2.0"));
+        Assert.True(updateManager.TryGetPackageContentDirPath(NuGetVersion.Parse("2.0"), out var versionPath));
+        Assert.True(Directory.Exists(versionPath));
+    }
+
+    [Fact]
     public async Task TryGetPackageMetadata_ReturnsMetadataIfAvailable()
     {
         const string version = "1.0";

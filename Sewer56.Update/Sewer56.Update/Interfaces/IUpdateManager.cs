@@ -49,4 +49,12 @@ public interface IUpdateManager : IDisposable
     /// <exception cref="FileInUseException">One of the files to be patched is currently in use.</exception>
     /// <returns>Returns true if closing the process is required (out of process), else false.</returns>
     Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions options);
+
+    /// <summary>
+    /// Gets the path to the folder storing the extracted package.
+    /// </summary>
+    /// <param name="version">The version for which to get the contents.</param>
+    /// <param name="path">The path leading to the package contents.</param>
+    /// <returns>True if the package contents were found, else false.</returns>
+    bool TryGetPackageContentDirPath(NuGetVersion version, out string path);
 }

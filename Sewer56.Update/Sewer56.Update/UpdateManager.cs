@@ -91,7 +91,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     {            
         // Get package file path and content directory path
         var packageFilePath       = GetPackageFilePath(version);
-        var packageContentDirPath = GetPackageContentDirPath(version);
+        var packageContentDirPath = GetPackageContentDirPath_Internal(version);
 
         // Package content directory should exist
         // Package file should have been deleted after extraction
@@ -110,11 +110,11 @@ public class UpdateManager<T> : IUpdateManager where T : class
         if (!IsUpdatePrepared(version))
             return null;
 
-        var packageContentPath = GetPackageContentDirPath(version);
+        var packageContentPath = GetPackageContentDirPath_Internal(version);
         if (!Singleton<PackageMetadata<T>>.Instance.CanReadFromDirectory(packageContentPath))
             return null;
         
-        return await PackageMetadata<T>.ReadFromDirectoryAsync(GetPackageContentDirPath(version), token);
+        return await PackageMetadata<T>.ReadFromDirectoryAsync(GetPackageContentDirPath_Internal(version), token);
     }
 
     /// <inheritdoc />
@@ -151,7 +151,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
 
         // Get package file path and content directory path
         var packageFilePath       = GetPackageFilePath(version);
-        var packageContentDirPath = GetPackageContentDirPath(version);
+        var packageContentDirPath = GetPackageContentDirPath_Internal(version);
 
         // Ensure storage directory exists
         Directory.CreateDirectory(_storageDirPath);
@@ -183,7 +183,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         EnsureUpdatePrepared(version);
 
         // Get package content directory path.
-        var packageContentDirPath = GetPackageContentDirPath(version);
+        var packageContentDirPath = GetPackageContentDirPath_Internal(version);
         var metadata = await Package<T>.ReadOrCreateLegacyMetadataFromDirectoryAsync(packageContentDirPath);
 
         if (IsPackageCurrentProgram())
@@ -222,9 +222,16 @@ public class UpdateManager<T> : IUpdateManager where T : class
         return false;
     }
 
-    private string GetPackageFilePath(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}.onv");
+    /// <inheritdoc />
+    public bool TryGetPackageContentDirPath(NuGetVersion version, out string path)
+    {
+        path = GetPackageContentDirPath_Internal(version);
+        return Directory.Exists(path);
+    }
 
-    private string GetPackageContentDirPath(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}");
+    private string GetPackageFilePath(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}.onv");
+    
+    private string GetPackageContentDirPath_Internal(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}");
 
     private void EnsureUpdatePrepared(NuGetVersion version)
     {
