@@ -118,7 +118,7 @@ public class ReleaseBuilder<T> where T : class
     private async Task BuildExistingPackageItem(ReleaseMetadataBuilder<T> metadata, ExistingPackageBuilderItem existingPackageItem, BuildArgs args, IProgress<double> itemProgress)
     {
         var packageMetadata = await Package<T>.ReadMetadataFromDirectoryAsync(existingPackageItem.Path);
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), itemProgress);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
     }
 
     private async Task BuildDeltaItem(ReleaseMetadataBuilder<T> metadata, DeltaBuilderItem<T> deltaBuilderItem, BuildArgs args, IProgress<double> itemProgress)
@@ -135,14 +135,14 @@ public class ReleaseBuilder<T> where T : class
                 deltaProgress.Report(progress);
             });
 
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), compressProgress);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), compressProgress);
     }
 
     private async Task BuildCopyItem(ReleaseMetadataBuilder<T> metadata, CopyBuilderItem<T> copyBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
         using var packageOutputPath = new TemporaryFolderAllocation();
         var packageMetadata = await Package<T>.CreateAsync(copyBuilderItem.FolderPath, packageOutputPath.FolderPath, copyBuilderItem.Version, copyBuilderItem.Data, copyBuilderItem.IgnoreRegexes);
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageCopyFiles(packageMetadata), itemProgress);
+        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
     }
 
     private async Task BuildItemCommon(ReleaseMetadataBuilder<T> metadata, BuildArgs args, PackageMetadata<T> packageMetadata, List<string> packageFiles, IProgress<double> progress)
@@ -180,15 +180,17 @@ public class ReleaseBuilder<T> where T : class
         return fileName;
     }
 
-    private List<string> GetPackageCopyFiles(PackageMetadata<T> metadata)
+    private List<string> GetPackageFileList(PackageMetadata<T> metadata)
     {
         return metadata.Type switch
         {
             PackageType.Copy   => metadata.Hashes!.Files.Select(x => x.RelativePath).ToList(),
-            PackageType.Delta  => metadata.DeltaData!.PatchData.ToFileHashSet().Files.Select(x => x.RelativePath).ToList(),
+            PackageType.Delta  => GetDeltaFileList(metadata),
             _ => throw new ArgumentOutOfRangeException()
         };
     }
+
+    private List<string> GetDeltaFileList(PackageMetadata<T> metadata) => metadata.DeltaData!.PatchData.FilePathSet.ToList();
 }
 
 /// <summary/>

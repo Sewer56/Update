@@ -16,8 +16,10 @@ public static class UpdateManagerExtensions
     /// <summary>
     /// Checks for new version and performs an update if available.
     /// </summary>
-    public static async Task<bool> CheckPerformUpdateAsync(this IUpdateManager manager, OutOfProcessOptions outOfProcessOptions, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
+    public static async Task<bool> CheckPerformUpdateAsync(this IUpdateManager manager, OutOfProcessOptions? outOfProcessOptions = null, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
+        outOfProcessOptions ??= new OutOfProcessOptions();
+
         // Check
         var result = await manager.CheckForUpdatesAsync(cancellationToken);
         if (!result.CanUpdate || result.LastVersion == null)

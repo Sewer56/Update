@@ -6,10 +6,13 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Extensions;
 using NuGet.Versioning;
+using Sewer56.DeltaPatchGenerator.Lib;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Extensions;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Enums;
 using Sewer56.Update.Packaging.Extractors;
+using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers;
@@ -158,6 +161,109 @@ public class UpdateManagerTests : IDisposable
 
         // Arrange
         metadata.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task StartUpdate_ForCopyPackage_ForExternalComponent_WhenAddingFiles()
+    {
+        using var dummyUpdatee = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.AddMissingFileFolderOriginal, dummyUpdatee.FolderPath);
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.AddMissingFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.AddMissingFileFolderTarget,
+            Version = "2.0"
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        var expectedHashes = HashSet.Generate(Assets.AddMissingFileFolderTarget);
+
+        // Act
+        var updateeMetadata = new ItemMetadata(NuGetVersion.Parse("1.0"), dummyUpdatee.FolderPath);
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(updateeMetadata, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+        await updateManager.CheckPerformUpdateAsync();
+
+        // Assert
+        Assert.True(HashSet.Verify(expectedHashes, dummyUpdatee.FolderPath, out _, out _));
+    }
+
+    [Fact]
+    public async Task StartUpdate_ForDeltaPackage_ForExternalComponent_WhenAddingFiles()
+    {
+        using var dummyUpdatee = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.AddMissingFileFolderOriginal, dummyUpdatee.FolderPath);
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddDeltaPackage(new DeltaBuilderItem<Empty>()
+        {
+            FolderPath = Assets.AddMissingFileFolderTarget,
+            Version    = "2.0",
+            PreviousVersion = "1.0",
+            PreviousVersionFolder = Assets.AddMissingFileFolderOriginal
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        var expectedHashes = HashSet.Generate(Assets.AddMissingFileFolderTarget);
+
+        // Act
+        var updateeMetadata = new ItemMetadata(NuGetVersion.Parse("1.0"), dummyUpdatee.FolderPath);
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(updateeMetadata, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+        await updateManager.CheckPerformUpdateAsync();
+
+        // Assert
+        Assert.True(HashSet.Verify(expectedHashes, dummyUpdatee.FolderPath, out _, out _));
+    }
+
+    [Fact]
+    public async Task StartUpdate_ForDeltaPackage_ForExternalComponent_WhenPatchingFiles()
+    {
+        using var dummyUpdatee = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.ManyFileFolderOriginal, dummyUpdatee.FolderPath);
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddDeltaPackage(new DeltaBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderTarget,
+            Version = "2.0",
+            PreviousVersion = "1.0",
+            PreviousVersionFolder = Assets.ManyFileFolderOriginal
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        var expectedHashes = HashSet.Generate(Assets.ManyFileFolderTarget);
+
+        // Act
+        var updateeMetadata = new ItemMetadata(NuGetVersion.Parse("1.0"), dummyUpdatee.FolderPath);
+        using var updateManager = await UpdateManager<Empty>.CreateAsync(updateeMetadata, new LocalPackageResolver(this.OutputFolder), new ZipPackageExtractor());
+        await updateManager.CheckPerformUpdateAsync();
+
+        // Assert
+        Assert.True(HashSet.Verify(expectedHashes, dummyUpdatee.FolderPath, out _, out _));
     }
 
 #if !DEBUG

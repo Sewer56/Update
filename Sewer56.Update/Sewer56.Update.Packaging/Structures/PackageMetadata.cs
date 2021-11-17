@@ -105,12 +105,17 @@ public class PackageMetadata : IJsonSerializable
     /// </summary>
     /// <param name="targetDirectory">The directory set to receive the patch.</param>
     /// <param name="sourceDirectory">
-    ///     The source directory. If not specified, defaults to <see cref="FolderPath"/>.
-    ///     If the patch is a delta patch, you should specify the original source to be patched here!
+    ///     The source directory containing the patch files.
+    ///     If not specified, defaults to <see cref="FolderPath"/>.
     /// </param>
-    public void Apply(string targetDirectory, string? sourceDirectory = null)
+    /// <param name="deltaSourceDirectory">
+    ///     The directory containing files to be delta patched.
+    ///     If not specified, defaults to <paramref name="targetDirectory"/>.
+    /// </param>
+    public void Apply(string targetDirectory, string? sourceDirectory = null, string? deltaSourceDirectory = null)
     {
         sourceDirectory ??= FolderPath;
+        deltaSourceDirectory ??= targetDirectory;
 
         switch (Type)
         {
@@ -121,7 +126,7 @@ public class PackageMetadata : IJsonSerializable
                 Apply_Legacy(targetDirectory, sourceDirectory!);
                 break;
             case PackageType.Delta:
-                Apply_Delta(targetDirectory, sourceDirectory!);
+                Apply_Delta(targetDirectory, sourceDirectory!, deltaSourceDirectory);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -139,13 +144,23 @@ public class PackageMetadata : IJsonSerializable
 
     private void Apply_Copy(string targetDirectory, string sourceDirectory) => CopyFiles(targetDirectory, sourceDirectory, true);
 
-    private void Apply_Delta(string targetDirectory, string sourceDirectory)
+    private void Apply_Delta(string targetDirectory, string sourceDirectory, string? deltaSourceDirectory)
     {
         if (DeltaData == null)
             throw new NullReferenceException($"Expected {nameof(DeltaData)} to not be null but was null.");
 
-        CopyFiles(targetDirectory, sourceDirectory, false); // Copy non-patched files.
-        Patch.Apply(DeltaData.PatchData, sourceDirectory, targetDirectory);
+        CopyFiles(targetDirectory, deltaSourceDirectory, false); // Copy non-patched files.
+        var oldDirectory = DeltaData.PatchData.Directory;
+
+        try
+        {
+            DeltaData.PatchData.Directory = sourceDirectory;
+            Patch.Apply(DeltaData.PatchData, deltaSourceDirectory, targetDirectory);
+        }
+        finally
+        {
+            DeltaData.PatchData.Directory = oldDirectory;
+        }
     }
 
     /// <inheritdoc />

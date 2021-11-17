@@ -39,7 +39,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         _extractor = extractor;
 
         // Set storage directory path
-        _storageDirPath = Utilities.MakeUniqueFolder(Paths.TempFolder);
+        _storageDirPath = Utilities.MakeUniqueFolder(Path.GetTempPath());
     }
 
     /// <summary>
@@ -195,7 +195,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
             if (metadata.Type == PackageType.Delta)
             {
                 using var tempDirectoryAlloc = new TemporaryFolderAllocation();
-                metadata.Apply(tempDirectoryAlloc.FolderPath, Updatee.BaseDirectory);
+                metadata.Apply(tempDirectoryAlloc.FolderPath, null, Updatee.BaseDirectory);
                 IOEx.MoveDirectory(tempDirectoryAlloc.FolderPath, metadata.FolderPath);
             }
 
@@ -214,11 +214,11 @@ public class UpdateManager<T> : IUpdateManager where T : class
         }
 
         // Ensure Updatee isn't Currently Used
-        if (!IOEx.CheckFileAccess(Updatee.ExecutablePath))
+        if (!string.IsNullOrEmpty(Updatee.ExecutablePath) && !IOEx.CheckFileAccess(Updatee.ExecutablePath))
             throw new FileInUseException(Updatee.ExecutablePath!);
 
         // Parse out the package contents.
-        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath);
+        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath, Updatee.BaseDirectory);
         return false;
     }
 

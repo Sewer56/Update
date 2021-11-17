@@ -169,7 +169,7 @@ public class PackagingTests
         // Act
         await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, PackageFolder, "1.0", "1.0.1");
         var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
-        metadata.Apply(ResultFolder, Assets.ManyFileFolderOriginal);
+        metadata.Apply(ResultFolder, null, Assets.ManyFileFolderOriginal);
 
         // Assert
         Assert.True(metadata.Verify(out _, out _, ResultFolder));
@@ -184,7 +184,8 @@ public class PackagingTests
         metadata.Apply(ResultFolder);
 
         // Assert
-        Assert.True(metadata.Verify(out _, out _, ResultFolder));
+        var valid = metadata.Verify(out var missingFiles, out var mismatchFiles, ResultFolder);
+        Assert.True(valid);
     }
 
     [Fact]
@@ -193,9 +194,10 @@ public class PackagingTests
         // Act
         await Package<Empty>.CreateDeltaAsync(Assets.AddMissingFileFolderOriginal, Assets.AddMissingFileFolderTarget, PackageFolder, "1.0", "1.0.1");
         var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
-        metadata.Apply(ResultFolder, Assets.AddMissingFileFolderOriginal);
+        metadata.Apply(ResultFolder, null, Assets.AddMissingFileFolderOriginal);
 
         // Assert
-        Assert.True(metadata.Verify(out _, out _, ResultFolder));
+        var valid = metadata.Verify(out var missingFiles, out var mismatchFiles, ResultFolder);
+        Assert.True(valid);
     }
 }
