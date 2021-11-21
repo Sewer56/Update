@@ -264,5 +264,5 @@ public class UpdateOptions
     /// <summary>
     /// True if old version files should be cleaned up (removed) after an update, else false.
     /// </summary>
-    public bool CleanupAfterUpdate;
+    public bool CleanupAfterUpdate = true;
 }
