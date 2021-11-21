@@ -28,6 +28,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     private readonly IPackageExtractor _extractor;
 
     private readonly string _storageDirPath;
+    private bool _cleanupOnDispose = true;
 
     /// <inheritdoc />
     public ItemMetadata Updatee { get; }
@@ -72,7 +73,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        if (!string.IsNullOrEmpty(_storageDirPath))
+        if (!string.IsNullOrEmpty(_storageDirPath) && _cleanupOnDispose)
             IOEx.TryDeleteDirectory(_storageDirPath, true);
     }
 
@@ -214,6 +215,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
 
             var startInfo = Startup.GetProcessStartInfo(Updatee.ExecutablePath!, Updatee.BaseDirectory, packageContentDirPath, startupParams);
             Process.Start(startInfo);
+            _cleanupOnDispose = false;
             return true;
         }
 
