@@ -46,6 +46,15 @@ public static class Startup
 
         // Copy out specified contents.
         IOEx.CopyDirectory(startupParams.PackageContentPath, startupParams.TargetDirectory);
+
+        // Cleanup (if necessary)
+        if (startupParams.CleanupAfterUpdate)
+        {
+            var metadata = Task.Run(() => Package<Empty>.ReadOrCreateLegacyMetadataFromDirectoryAsync(startupParams.PackageContentPath)).Result;
+            metadata.Cleanup(startupParams.TargetDirectory);
+        }
+
+        IOEx.TryDeleteDirectory(startupParams.PackageContentPath);
         if (!string.IsNullOrEmpty(startupParams.StartupApplication))
             Process.Start(startupParams.StartupApplication, startupParams.StartupApplicationArgs);
 
@@ -123,4 +132,9 @@ internal class StartupParams
     /// Id of the process to wait before it dies.
     /// </summary>
     public int CurrentProcessId { get; set; } = 0;
+
+    /// <summary>
+    /// True if old version files should be cleaned up (removed) after an update, else false.
+    /// </summary>
+    public bool CleanupAfterUpdate { get; set; } = true;
 }

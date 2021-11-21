@@ -37,7 +37,7 @@ public interface IUpdateManager : IDisposable
     /// Prepares an update to specified version.
     /// </summary>
     Task PrepareUpdateAsync(NuGetVersion version, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
-
+    
     /// <summary>
     /// Performs an update. If the current application is being the one updated,
     /// it is closed and a new instance of the application is launched to perform the update.
@@ -45,10 +45,11 @@ public interface IUpdateManager : IDisposable
     /// Otherwise the update is done in-process.
     /// </summary>
     /// <param name="version">The version to upgrade the package to.</param>
-    /// <param name="options">Options to use if the update needs to be performed out of process and application restarted.</param>
+    /// <param name="outOfProcessOptions">Options to use if the update needs to be performed out of process and application restarted.</param>
+    /// <param name="updateOptions">Options that affect how the updates are applied.</param>
     /// <exception cref="FileInUseException">One of the files to be patched is currently in use.</exception>
     /// <returns>Returns true if closing the process is required (out of process), else false.</returns>
-    Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions options);
+    Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions? outOfProcessOptions = null, UpdateOptions? updateOptions = null);
 
     /// <summary>
     /// Gets the path to the folder storing the extracted package.

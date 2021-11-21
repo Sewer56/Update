@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
-using FluentAssertions.Extensions;
 using NuGet.Versioning;
 using Sewer56.DeltaPatchGenerator.Lib;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
@@ -12,7 +10,6 @@ using Sewer56.Update.Extensions;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Enums;
 using Sewer56.Update.Packaging.Extractors;
-using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers;

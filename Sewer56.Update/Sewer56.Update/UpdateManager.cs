@@ -177,8 +177,11 @@ public class UpdateManager<T> : IUpdateManager where T : class
     }
 
     /// <inheritdoc />
-    public async Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions options)
+    public async Task<bool> StartUpdateAsync(NuGetVersion version, OutOfProcessOptions? outOfProcessOptions, UpdateOptions? updateOptions)
     {
+        updateOptions ??= new UpdateOptions();
+        outOfProcessOptions ??= new OutOfProcessOptions();
+
         // Ensure that the current state is valid for this operation
         EnsureUpdatePrepared(version);
 
@@ -188,8 +191,8 @@ public class UpdateManager<T> : IUpdateManager where T : class
 
         if (IsPackageCurrentProgram())
         {
-            if (options == null)
-                throw new NullReferenceException($"Expected {nameof(options)} to not be null but was null.");
+            if (updateOptions == null)
+                throw new NullReferenceException($"Expected {nameof(updateOptions)} to not be null but was null.");
             
             // Apply delta to self.
             if (metadata.Type == PackageType.Delta)
@@ -203,13 +206,14 @@ public class UpdateManager<T> : IUpdateManager where T : class
             {
                 CurrentProcessId = Process.GetCurrentProcess().Id,
                 PackageContentPath = packageContentDirPath,
-                StartupApplication = options.Restart ? Updatee.ExecutablePath! : "",
-                StartupApplicationArgs = options.Restart ? options.RestartArguments : "",
-                TargetDirectory = Updatee.BaseDirectory
+                StartupApplication = outOfProcessOptions.Restart ? Updatee.ExecutablePath! : "",
+                StartupApplicationArgs = outOfProcessOptions.Restart ? outOfProcessOptions.RestartArguments : "",
+                TargetDirectory = Updatee.BaseDirectory,
+                CleanupAfterUpdate = updateOptions.CleanupAfterUpdate
             };
 
             var startInfo = Startup.GetProcessStartInfo(Updatee.ExecutablePath!, Updatee.BaseDirectory, packageContentDirPath, startupParams);
-            var proc = Process.Start(startInfo);
+            Process.Start(startInfo);
             return true;
         }
 
@@ -218,7 +222,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
             throw new FileInUseException(Updatee.ExecutablePath!);
 
         // Parse out the package contents.
-        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath, Updatee.BaseDirectory);
+        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath, Updatee.BaseDirectory, updateOptions.CleanupAfterUpdate);
         return false;
     }
 
@@ -248,4 +252,15 @@ public class UpdateManager<T> : IUpdateManager where T : class
         }
         catch (Exception) { return false; }
     }
+}
+
+/// <summary>
+/// Options that affect how updates are applied.
+/// </summary>
+public class UpdateOptions
+{
+    /// <summary>
+    /// True if old version files should be cleaned up (removed) after an update, else false.
+    /// </summary>
+    public bool CleanupAfterUpdate;
 }

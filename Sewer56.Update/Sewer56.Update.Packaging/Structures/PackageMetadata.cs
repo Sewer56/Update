@@ -112,7 +112,10 @@ public class PackageMetadata : IJsonSerializable
     ///     The directory containing files to be delta patched.
     ///     If not specified, defaults to <paramref name="targetDirectory"/>.
     /// </param>
-    public void Apply(string targetDirectory, string? sourceDirectory = null, string? deltaSourceDirectory = null)
+    /// <param name="cleanupAfterUpdate">
+    ///     If true (default) removes redundant files after updating.
+    /// </param>
+    public void Apply(string targetDirectory, string? sourceDirectory = null, string? deltaSourceDirectory = null, bool cleanupAfterUpdate = true)
     {
         sourceDirectory ??= FolderPath;
         deltaSourceDirectory ??= targetDirectory;
@@ -133,6 +136,16 @@ public class PackageMetadata : IJsonSerializable
         }
 
         // Cleanup.
+        if (cleanupAfterUpdate)
+            Cleanup(targetDirectory);
+    }
+
+    /// <summary>
+    /// Cleans up a folder (removes files not in list) based on the file list in the package metadata.
+    /// </summary>
+    /// <param name="targetDirectory">The directory to be cleaned up.</param>
+    public void Cleanup(string targetDirectory)
+    {
         if (Hashes != null)
         {
             var compiledIgnoreRegexes = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
