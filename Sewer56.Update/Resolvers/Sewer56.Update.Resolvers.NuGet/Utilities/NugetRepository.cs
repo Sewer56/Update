@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -46,10 +47,10 @@ public class NugetRepository
     /// <param name="token">A cancellation token to allow cancellation of the task.</param>
     public async Task<DownloadResourceResult> DownloadPackageAsync(PackageIdentity packageIdentity, CancellationToken token = default)
     {
-        var downloadContext = new PackageDownloadContext(new SourceCacheContext(), Path.GetTempPath(), false);
+        var downloadContext = new PackageDownloadContext(new SourceCacheContext(), Path.GetTempPath(), true);
 
         try
-        {
+        { 
             var downloadResource = await _downloadResource;
             return await downloadResource.GetDownloadResourceResultAsync(packageIdentity, downloadContext, Path.GetTempPath(), _nullLogger, token);
         }
@@ -75,5 +76,40 @@ public class NugetRepository
             return await metadataResource.GetMetadataAsync(packageId, includePrerelease, includeUnlisted, _sourceCacheContext, _nullLogger, token);
         }
         catch (Exception) { return new IPackageSearchMetadata[0]; }
+    }
+
+    /// <summary>
+    /// [WARNING: REFLECTION]
+    /// Uses reflection to get a URL to the package download.
+    /// </summary>
+    /// <param name="packageIdentity">Information about the package to download.</param>
+    /// <param name="token">A cancellation token to allow cancellation of the task.</param>
+    public async Task<string?> GetDownloadUrlUnsafeAsync(PackageIdentity packageIdentity, CancellationToken token = default)
+    {
+        try
+        {
+            var downloadResource = await _downloadResource;
+
+            // No public API for this, ah shit, here we go again.
+            // Original definition:
+
+            /*
+                /// <summary>
+                /// Get the download url of the package.
+                /// 1. If the identity is a SourcePackageDependencyInfo the SourcePackageDependencyInfo.DownloadUri is used.
+                /// 2. A url will be constructed for the flat container location if the source has that resource.
+                /// 3. The download url will be found in the registration blob as a fallback.
+                /// </summary>
+                private async Task<Uri> GetDownloadUrl(PackageIdentity identity, ILogger log, CancellationToken token)
+            */
+
+            var dynMethod = downloadResource.GetType().GetMethod("GetDownloadUrl", BindingFlags.NonPublic | BindingFlags.Instance);
+            var result = await (Task<Uri>) dynMethod!.Invoke(downloadResource, new object[] { packageIdentity, null!, token })!;
+            return result.AbsoluteUri;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 }

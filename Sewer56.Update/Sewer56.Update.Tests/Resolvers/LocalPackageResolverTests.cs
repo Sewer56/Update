@@ -175,4 +175,32 @@ public class LocalPackageResolverTests
         // Assert
         Assert.True(File.Exists(packageFilePath));
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetFileSize()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        // Act
+        var resolver = new LocalPackageResolver(OutputFolder);
+        await resolver.InitializeAsync();
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        var fileSize = await resolver.GetDownloadFileSizeAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(fileSize > 0);
+    }
 }

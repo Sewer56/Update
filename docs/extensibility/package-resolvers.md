@@ -94,3 +94,19 @@ Use your new package resolver class when creating the update manager, as such:
 // Create an update manager that updates from filesystem `LocalPackageResolver` and stores packages as zips `ZipPackageExtractor`.
 using var manager = await UpdateManager<Empty>.CreateAsync(updatee, new LocalPackageResolver("c:\\test\\release"), new ZipPackageExtractor());
 ```
+
+## Extensions
+
+Some resolvers may support additional (optional) extensions such as `IPackageResolverDownloadSize` which allows you to get the download size of a package before downloading it.  
+
+Example usage:  
+```csharp
+// Get file size (if supported)
+if (resolver is IPackageResolverDownloadSize downloadSizeProvider)
+    fileSize = await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
+```
+
+Available Extensions:
+| Type                         | Description                                       |
+|------------------------------|---------------------------------------------------|
+| IPackageResolverDownloadSize | Returns the size of the package to be downloaded. |

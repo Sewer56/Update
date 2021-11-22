@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Versioning;
 using Sewer56.Update.Extensions;
 using Sewer56.Update.Interfaces;
+using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
@@ -21,7 +22,7 @@ namespace Sewer56.Update.Resolvers.GameBanana;
 /// <summary>
 /// A package resolver that allows people to receive updates performed via gamebanana.
 /// </summary>
-public class GameBananaUpdateResolver : IPackageResolver
+public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownloadSize
 {
     private GameBananaResolverConfiguration _configuration;
     private CommonPackageResolverSettings _commonResolverSettings;
@@ -83,20 +84,37 @@ public class GameBananaUpdateResolver : IPackageResolver
     {
         if (_releases == null || _gbItem == null)
             return;
-
-        var releaseItem = _releases.GetRelease(version.ToString(), verificationInfo);
-        if (releaseItem == null)
-            throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
-
-        var expectedFileName = GameBananaUtilities.GetFileNameStart(releaseItem.FileName);
-        var gbItemFile       = _gbItem.Files!.FirstOrDefault(x => x.Value.FileName!.StartsWith(expectedFileName, StringComparison.OrdinalIgnoreCase)).Value;
+        
+        var downloadUrl = GetVersionDownloadUrl(version, verificationInfo);
 
         //Create a WebRequest to get the file & create a response. 
-        var fileReq  = WebRequest.CreateHttp(gbItemFile.DownloadUrl!);
+        var fileReq  = WebRequest.CreateHttp(downloadUrl);
         var fileResp = await fileReq.GetResponseAsync();
         await using var responseStream = fileResp.GetResponseStream();
         await using var targetFile = File.Open(destFilePath, System.IO.FileMode.Create);
         await responseStream.CopyToAsyncEx(targetFile, 262144, progress, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        if (_releases == null || _gbItem == null)
+            return -1;
+
+        var url = GetVersionDownloadUrl(version, verificationInfo);
+        var fileReq = WebRequest.CreateHttp(url);
+        return (await fileReq.GetResponseAsync()).ContentLength;
+    }
+
+    private string GetVersionDownloadUrl(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo)
+    {
+        var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
+        if (releaseItem == null)
+            throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
+
+        var expectedFileName = GameBananaUtilities.GetFileNameStart(releaseItem.FileName);
+        var gbItemFile = _gbItem!.Files!.FirstOrDefault(x => x.Value.FileName!.StartsWith(expectedFileName, StringComparison.OrdinalIgnoreCase)).Value;
+        return gbItemFile.DownloadUrl!;
     }
 
     private GameBananaItemFile? GetGameBananaMetadataFile(Dictionary<string, GameBananaItemFile> files, out bool isZip)
@@ -114,4 +132,5 @@ public class GameBananaUpdateResolver : IPackageResolver
         isZip = false;
         return null;
     }
+
 }

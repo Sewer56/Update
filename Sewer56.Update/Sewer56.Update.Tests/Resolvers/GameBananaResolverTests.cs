@@ -66,4 +66,20 @@ public class GameBananaResolverTests
         // Assert
         Assert.True(File.Exists(packageFilePath));
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetFileSize()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+
+        // Act
+        var resolver = new GameBananaUpdateResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        var fileSize = await resolver.GetDownloadFileSizeAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(fileSize > 0);
+    }
 }

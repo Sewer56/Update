@@ -24,8 +24,15 @@ namespace Sewer56.Update;
 /// <inheritdoc />
 public class UpdateManager<T> : IUpdateManager where T : class
 {
-    private readonly IPackageResolver _resolver;
-    private readonly IPackageExtractor _extractor;
+    /// <summary>
+    /// The resolver that was used to instantiate this UpdateManager.
+    /// </summary>
+    public readonly IPackageResolver Resolver;
+
+    /// <summary>
+    /// The extractor that was used to instantiate this UpdateManager.
+    /// </summary>
+    public readonly IPackageExtractor Extractor;
 
     private readonly string _storageDirPath;
     private bool _cleanupOnDispose = true;
@@ -36,8 +43,8 @@ public class UpdateManager<T> : IUpdateManager where T : class
     private UpdateManager(ItemMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
     {
         Updatee = updatee;
-        _resolver = resolver;
-        _extractor = extractor;
+        Resolver = resolver;
+        Extractor = extractor;
 
         // Set storage directory path
         _storageDirPath = Utilities.MakeUniqueFolder(Path.GetTempPath());
@@ -52,7 +59,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     public static async Task<UpdateManager<T>> CreateAsync(ItemMetadata updatee, IPackageResolver resolver, IPackageExtractor extractor)
     {
         var result = new UpdateManager<T>(updatee, resolver, extractor);
-        await result._resolver.InitializeAsync();
+        await result.Resolver.InitializeAsync();
         return result;
     }
 
@@ -81,7 +88,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     public async Task<CheckForUpdatesResult> CheckForUpdatesAsync(CancellationToken cancellationToken = default)
     {
         // Get versions.
-        var versions    = await _resolver.GetPackageVersionsAsync(cancellationToken);
+        var versions    = await Resolver.GetPackageVersionsAsync(cancellationToken);
         var lastVersion = versions.Count > 0 ? versions[^1] : null;
         var canUpdate   = lastVersion != null && Updatee.Version < lastVersion;
         return new CheckForUpdatesResult(versions, lastVersion, canUpdate);
@@ -158,7 +165,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         Directory.CreateDirectory(_storageDirPath);
 
         // Download package
-        await _resolver.DownloadPackageAsync(version, packageFilePath, 
+        await Resolver.DownloadPackageAsync(version, packageFilePath, 
             new ReleaseMetadataVerificationInfo() { FolderPath = Updatee.BaseDirectory },
             progressMixer?.Slice(0.9), // 0% -> 90%
             cancellationToken
@@ -168,7 +175,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         IOEx.TryEmptyDirectory(packageContentDirPath);
 
         // Extract package contents
-        await _extractor.ExtractPackageAsync(packageFilePath, packageContentDirPath,
+        await Extractor.ExtractPackageAsync(packageFilePath, packageContentDirPath,
             progressMixer?.Slice(0.1), // 90% -> 100%
             cancellationToken
         );

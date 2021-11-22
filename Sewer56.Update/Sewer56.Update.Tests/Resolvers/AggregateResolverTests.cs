@@ -85,4 +85,25 @@ public class AggregateResolverTests
         Assert.True(File.Exists(packageFilePath));
     }
 
+    [Fact]
+    public async Task DownloadPackageAsync_CanGetFileSize()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new GameBananaUpdateResolver(GameBananaConfig, commonResolverSettings),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        await resolver.InitializeAsync();
+
+        // GitHub Only Package
+        var fileSize = await resolver.GetDownloadFileSizeAsync(new NuGetVersion("3.0-pre"), new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(fileSize > 0);
+    }
 }

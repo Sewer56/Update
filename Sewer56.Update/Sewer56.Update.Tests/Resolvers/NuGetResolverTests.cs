@@ -66,4 +66,24 @@ public class NuGetResolverTests
         // Assert
         Assert.True(File.Exists(packageFilePath));
     }
+
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetFileSize()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings()
+        {
+            AllowPrereleases = true
+        };
+
+        // Act
+        var resolver = new NuGetUpdateResolver(ResolverConfiguration, commonResolverSettings);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        var downloadSize = await resolver.GetDownloadFileSizeAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(downloadSize > 0);
+    }
+
 }

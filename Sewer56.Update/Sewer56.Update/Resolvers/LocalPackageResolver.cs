@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NuGet.Versioning;
 using Sewer56.Update.Extensions;
 using Sewer56.Update.Interfaces;
+using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
@@ -19,7 +20,7 @@ namespace Sewer56.Update.Resolvers;
 /// Resolves packages from a local folder.
 /// Local folder must contain manifest for each package.
 /// </summary>
-public class LocalPackageResolver : IPackageResolver
+public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSize
 {
     private ReleaseMetadata? _releases;
     private string _repositoryFolder;
@@ -43,12 +44,23 @@ public class LocalPackageResolver : IPackageResolver
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
+        await using var sourceFile = File.Open(GetReleaseFilePath(version, verificationInfo), FileMode.Open);
+        await using var targetFile = File.Open(destFilePath, FileMode.Create);
+        await sourceFile.CopyToAsyncEx(targetFile, 262144, progress, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        return Task.FromResult(new FileInfo(GetReleaseFilePath(version, verificationInfo)).Length);
+    }
+
+    private string GetReleaseFilePath(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo)
+    {
         var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
         if (releaseItem == null)
             throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
 
-        await using var sourceFile = File.Open(Path.Combine(_repositoryFolder, releaseItem.FileName), FileMode.Open);
-        await using var targetFile = File.Open(destFilePath, FileMode.Create);
-        await sourceFile.CopyToAsyncEx(targetFile, 262144, progress, cancellationToken);
+        return Path.Combine(_repositoryFolder, releaseItem.FileName);
     }
 }

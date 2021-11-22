@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Versioning;
 using Sewer56.Update.Interfaces;
+using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Packaging.Structures;
 
 namespace Sewer56.Update.Resolvers;
@@ -13,7 +14,7 @@ namespace Sewer56.Update.Resolvers;
 /// <summary>
 /// A package resolver that supports downloading of packages from multiple sources.
 /// </summary>
-public class AggregatePackageResolver : IPackageResolver
+public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize
 {
     private AggregatePackageResolverItem[] _resolverItems;
     private bool _hasAcquiredPackages;
@@ -47,6 +48,17 @@ public class AggregatePackageResolver : IPackageResolver
         await AcquirePackagesIfNecessaryAsync(cancellationToken);
         var resolver = GetResolverForVersion(version);
         await resolver.DownloadPackageAsync(version, destFilePath, verificationInfo, progress, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        await AcquirePackagesIfNecessaryAsync(default);
+        var resolver = GetResolverForVersion(version);
+        if (resolver is IPackageResolverDownloadSize downloadSizeProvider)
+            return await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
+            
+        return -1;
     }
 
     private List<NuGetVersion> FlattenVersions()

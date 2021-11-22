@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
-using NuGet.Protocol;
 using NuGet.Versioning;
 using Sewer56.Update.Interfaces;
+using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Structures;
-using Sewer56.Update.Resolvers.NuGet.Utilities;
 using Sewer56.Update.Structures;
 
 namespace Sewer56.Update.Resolvers.NuGet;
@@ -19,7 +18,7 @@ namespace Sewer56.Update.Resolvers.NuGet;
 /// <summary>
 /// Allows for retrieval of updates from a NuGet V3 Source.
 /// </summary>
-public class NuGetUpdateResolver : IPackageResolver
+public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSize
 {
     private NuGetUpdateResolverSettings _resolverSettings;
     private CommonPackageResolverSettings _commonPackageResolverSettings;
@@ -51,5 +50,14 @@ public class NuGetUpdateResolver : IPackageResolver
         using var result = await _resolverSettings.NugetRepository!.DownloadPackageAsync(identity, cancellationToken);
         await using var fileStream = File.Open(destFilePath, FileMode.Create);
         await result.PackageStream.CopyToAsyncEx(fileStream, 131072, progress, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        var identity = new PackageIdentity(_resolverSettings.PackageId, version);
+        var result  = await _resolverSettings.NugetRepository!.GetDownloadUrlUnsafeAsync(identity, default);
+        var fileReq = WebRequest.CreateHttp(result);
+        return (await fileReq.GetResponseAsync()).ContentLength;
     }
 }

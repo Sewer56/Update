@@ -127,4 +127,17 @@ public class GitHubReleaseResolverTests
         // Assert
         Assert.True(File.Exists(packageFilePath));
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetFileSize()
+    {
+        // Act
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        var fileSize = await resolver.GetDownloadFileSizeAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(fileSize > 0);
+    }
 }
