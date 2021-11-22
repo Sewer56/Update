@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Packaging;
+using Sewer56.Update.Packaging.Extractors;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
 using Sewer56.Update.Resolvers.GameBanana;
@@ -183,4 +184,99 @@ public class ReleaseBuilderTests
         }
     }
 
+    [Fact]
+    public async Task BuildRelease_CanIgnoreFile()
+    {
+        var extractor = new ZipPackageExtractor();
+        using var packageAssets = new TemporaryFolderAllocation();
+        using var extractedAssets = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.ManyFileFolderOriginal, packageAssets.FolderPath);
+
+        var textFileName = "text.json";
+        await using var textFile = File.Create(Path.Combine(packageAssets.FolderPath, textFileName));
+        await textFile.DisposeAsync();
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = packageAssets.FolderPath,
+            Version = "1.0",
+            IgnoreRegexes = new List<string>()
+            {
+                @".*\.json"
+            }
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        // Act
+        var releaseItem = metadata.GetRelease("1.0", new ReleaseMetadataVerificationInfo()
+        {
+            FolderPath = OutputFolder
+        });
+
+        await extractor.ExtractPackageAsync(Path.Combine(OutputFolder, releaseItem.FileName), extractedAssets.FolderPath);
+        var packageMetadata = await PackageMetadata<Empty>.ReadFromDirectoryAsync(extractedAssets.FolderPath);
+
+        // Assert
+        var filePath = Path.Combine(extractedAssets.FolderPath, textFileName);
+        Assert.False(File.Exists(filePath));
+        Assert.Equal(-1, packageMetadata.Hashes.Files.FindIndex(entry => Path.GetFileName(entry.RelativePath).Equals(textFileName, StringComparison.OrdinalIgnoreCase)));
+        Assert.True(packageMetadata.Verify(out var _, out var _));
+    }
+
+    [Fact]
+    public async Task BuildRelease_CanUnignoreFile()
+    {
+        var extractor = new ZipPackageExtractor();
+        using var packageAssets = new TemporaryFolderAllocation();
+        using var extractedAssets = new TemporaryFolderAllocation();
+        IOEx.CopyDirectory(Assets.ManyFileFolderOriginal, packageAssets.FolderPath);
+
+        var textFileName = "Cool.json";
+        await using var textFile = File.Create(Path.Combine(packageAssets.FolderPath, textFileName));
+        await textFile.DisposeAsync();
+
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = packageAssets.FolderPath,
+            Version = "1.0",
+            IgnoreRegexes = new List<string>()
+            {
+                @".*\.json"
+            },
+            IncludeRegexes = new List<string>()
+            {
+                @"Cool\.json"
+            }
+        });
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder
+        });
+
+        // Act
+        var releaseItem = metadata.GetRelease("1.0", new ReleaseMetadataVerificationInfo()
+        {
+            FolderPath = OutputFolder
+        });
+
+        await extractor.ExtractPackageAsync(Path.Combine(OutputFolder, releaseItem.FileName), extractedAssets.FolderPath);
+        var packageMetadata = await PackageMetadata<Empty>.ReadFromDirectoryAsync(extractedAssets.FolderPath);
+
+        // Assert
+        var filePath = Path.Combine(extractedAssets.FolderPath, textFileName);
+        Assert.True(File.Exists(filePath));
+        Assert.NotEqual(-1, packageMetadata.Hashes.Files.FindIndex(entry => Path.GetFileName(entry.RelativePath).Equals(textFileName, StringComparison.OrdinalIgnoreCase)));
+        Assert.True(packageMetadata.Verify(out var _, out var _));
+    }
 }
