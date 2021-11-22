@@ -257,7 +257,8 @@ public class UpdateManager<T> : IUpdateManager where T : class
         try
         {
             var assembly = ItemMetadata.FromEntryAssembly();
-            return assembly.ExecutablePath == Updatee.ExecutablePath;
+            return assembly.ExecutablePath!.Equals(Updatee.ExecutablePath, StringComparison.OrdinalIgnoreCase) ||
+                   Path.ChangeExtension(assembly.ExecutablePath, ".exe").Equals(Updatee.ExecutablePath, StringComparison.OrdinalIgnoreCase);
         }
         catch (Exception) { return false; }
     }
