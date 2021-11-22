@@ -22,6 +22,6 @@ public class SevenZipSharpExtractor : IPackageExtractor
 
         Directory.CreateDirectory(destDirPath);
         extractor.Extracting += (sender, args) => progress?.Report(args.PercentDone / 100.0);
-        await Task.Run(() => extractor.ExtractArchive(destDirPath), cancellationToken); // Note: DO NOT USE ASYNC OVERLOAD. Broken in library.
+        await extractor.ExtractArchiveAsync(destDirPath);
     }
 }
