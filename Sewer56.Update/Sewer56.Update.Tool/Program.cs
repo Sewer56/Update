@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,7 +7,6 @@ using CommandLine;
 using CommandLine.Text;
 using FluentValidation;
 using Sewer56.Update.Extractors.SevenZipSharp;
-using Sewer56.Update.Extractors.SharpCompress;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Compressors;
 using Sewer56.Update.Packaging.Interfaces;
@@ -18,9 +16,6 @@ using Sewer56.Update.Resolvers.NuGet;
 using Sewer56.Update.Tool.Options;
 using Sewer56.Update.Tool.Options.Groups;
 using Sewer56.Update.Tool.Validation;
-using SharpCompress.Common;
-using SharpCompress.Writers;
-using ShellProgressBar;
 
 namespace Sewer56.Update.Tool;
 
@@ -50,7 +45,8 @@ internal class Program
         validator.ValidateAndThrow(options);
 
         var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
-        await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath, options.LastVersion, options.Version, null, ignoreRegexes);
+        var includeRegexes = string.IsNullOrEmpty(options.IncludeRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IncludeRegexesPath)).ToList();
+        await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath, options.LastVersion, options.Version, null, ignoreRegexes, null, includeRegexes);
     }
 
     private static async Task CreateCopyPackage(CreateCopyPackageOptions options)
@@ -59,7 +55,8 @@ internal class Program
         validator.ValidateAndThrow(options);
 
         var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
-        await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes);
+        var includeRegexes = string.IsNullOrEmpty(options.IncludeRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IncludeRegexesPath)).ToList();
+        await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes, includeRegexes);
     }
 
     /// <summary>

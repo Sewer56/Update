@@ -61,6 +61,7 @@ public class PackagingTests
         Assert.Equal(metadata.FolderPath, metadataCopy.FolderPath);
         Assert.Equal(metadata.DeltaData, metadataCopy.DeltaData);
         Assert.Equal(metadata.IgnoreRegexes, metadataCopy.IgnoreRegexes);
+        Assert.Equal(metadata.IncludeRegexes, metadataCopy.IncludeRegexes);
     }
 
     [Fact]
@@ -81,6 +82,7 @@ public class PackagingTests
         Assert.Equal(metadata.DeltaData.PatchData.FilePathSet.Count, metadataCopy.DeltaData.PatchData.FilePathSet.Count);
         Assert.Equal(metadata.DeltaData.PatchData.AddedFilesSet.Count, metadataCopy.DeltaData.PatchData.AddedFilesSet.Count);
         Assert.Equal(metadata.IgnoreRegexes, metadataCopy.IgnoreRegexes);
+        Assert.Equal(metadata.IncludeRegexes, metadataCopy.IncludeRegexes);
     }
 
     [Fact]

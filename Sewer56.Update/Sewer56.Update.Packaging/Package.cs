@@ -54,10 +54,11 @@ public static class Package<T> where T : class
     /// <param name="version">The version of the package.</param>
     /// <param name="data">Extra data to add to the package.</param>
     /// <param name="ignoreRegexes">List of regexes; file is ignored if any matches.</param>
-    public static async Task<PackageMetadata<T>> CreateAsync(string folderPath, string outputFolder, string version, T? data = null, List<string>? ignoreRegexes = null)
+    /// <param name="includeRegexes">Regex pattern for including files. Overrides <paramref name="ignoreRegexes"/></param>
+    public static async Task<PackageMetadata<T>> CreateAsync(string folderPath, string outputFolder, string version, T? data = null, List<string>? ignoreRegexes = null, List<string>? includeRegexes = null)
     {
         Directory.CreateDirectory(outputFolder);
-        var metadata = PackageMetadata<T>.CreateFromDirectory(folderPath, version, PackageType.Copy, data, ignoreRegexes);
+        var metadata = PackageMetadata<T>.CreateFromDirectory(folderPath, version, PackageType.Copy, data, ignoreRegexes, includeRegexes);
         await metadata.ToDirectoryAsync(outputFolder);
         metadata.CopyFiles(outputFolder, folderPath);
         metadata.FolderPath = outputFolder;
@@ -75,10 +76,11 @@ public static class Package<T> where T : class
     /// <param name="data">Extra data to add to the package.</param>
     /// <param name="ignoreRegexes">List of regexes; file is ignored if any matches.</param>
     /// <param name="progress">Used for reporting current progress.</param>
-    public static async Task<PackageMetadata<T>> CreateDeltaAsync(string oldFolderPath, string newFolderPath, string outputFolder, string oldVersion, string version, T? data = null, List<string>? ignoreRegexes = null, Events.ProgressCallback? progress = null)
+    /// <param name="includeRegexes">Regex pattern for including files. Overrides <paramref name="ignoreRegexes"/></param>
+    public static async Task<PackageMetadata<T>> CreateDeltaAsync(string oldFolderPath, string newFolderPath, string outputFolder, string oldVersion, string version, T? data = null, List<string>? ignoreRegexes = null, Events.ProgressCallback? progress = null, List<string>? includeRegexes = null)
     {
         Directory.CreateDirectory(outputFolder);
-        var metadata       = PackageMetadata<T>.CreateFromDirectory(newFolderPath, version, PackageType.Delta, data, ignoreRegexes);
+        var metadata       = PackageMetadata<T>.CreateFromDirectory(newFolderPath, version, PackageType.Delta, data, ignoreRegexes, includeRegexes);
         metadata.DeltaData = new DeltaPackageMetadata()
         {
             PatchData  = Patch.Generate(oldFolderPath, newFolderPath, outputFolder, progress, false),

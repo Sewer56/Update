@@ -51,6 +51,11 @@ public class PackageMetadata : IJsonSerializable
     public List<string>? IgnoreRegexes { get; set; }
 
     /// <summary>
+    /// Regex pattern for including files. Overrides <see cref="IgnoreRegexes"/>.
+    /// </summary>
+    public List<string>? IncludeRegexes { get; set; }
+
+    /// <summary>
     /// Contains delta information about the patch.
     /// Only available if <see cref="Type"/> is <see cref="PackageType.Delta"/>
     /// </summary>
@@ -148,8 +153,9 @@ public class PackageMetadata : IJsonSerializable
     {
         if (Hashes != null)
         {
-            var compiledIgnoreRegexes = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
-            HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes));
+            var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));  // Delete if not match 
+            var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x, RegexOptions.Compiled)); // Delete if match.
+            HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes) && path.TryMatchAnyRegex(compiledIncludeRegexes));
         }
     }
 
@@ -217,10 +223,12 @@ public class PackageMetadata<T> : PackageMetadata where T : class
     /// <param name="version">The version of the package.</param>
     /// <param name="data">Extra data to add to the package.</param>
     /// <param name="ignoreRegexes">List of regexes; file is ignored if any matches.</param>
-    public static PackageMetadata<T> CreateFromDirectory(string directory, string version, PackageType packageType = PackageType.Copy, T? data = null, List<string>? ignoreRegexes = null)
+    /// <param name="includeRegexes">Regex pattern for including files. Overrides <paramref name="ignoreRegexes"/></param>
+    public static PackageMetadata<T> CreateFromDirectory(string directory, string version, PackageType packageType = PackageType.Copy, T? data = null, List<string>? ignoreRegexes = null, List<string>? includeRegexes = null)
     {
         var compiledIgnoreRegexes = ignoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
-        var hashes = packageType != PackageType.Legacy ? HashSet.Generate(directory, null, path => path.TryMatchAnyRegex(compiledIgnoreRegexes)) : null;
+        var compiledIncludeRegexes = includeRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
+        var hashes = packageType != PackageType.Legacy ? HashSet.Generate(directory, null, path => path.TryMatchAnyRegex(compiledIgnoreRegexes) && !path.TryMatchAnyRegex(compiledIncludeRegexes)) : null;
 
         return new PackageMetadata<T>()
         {
@@ -229,7 +237,8 @@ public class PackageMetadata<T> : PackageMetadata where T : class
             Hashes = hashes,
             Type = packageType,
             ExtraData = data,
-            IgnoreRegexes = ignoreRegexes
+            IgnoreRegexes = ignoreRegexes,
+            IncludeRegexes = includeRegexes
         };
     }
 }

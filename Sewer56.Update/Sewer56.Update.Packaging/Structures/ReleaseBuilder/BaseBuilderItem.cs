@@ -21,6 +21,11 @@ public class BaseBuilderItem<T> where T : class
     public List<string>? IgnoreRegexes = null;
 
     /// <summary>
+    /// Regex pattern for including files. Overrides <see cref="IgnoreRegexes"/>.
+    /// </summary>
+    public List<string>? IncludeRegexes = null;
+
+    /// <summary>
     /// Version of the current package.
     /// </summary>
     public string Version = "1.0";

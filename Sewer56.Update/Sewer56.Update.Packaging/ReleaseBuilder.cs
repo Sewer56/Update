@@ -133,7 +133,7 @@ public class ReleaseBuilder<T> where T : class
             (text, progress) =>
             {
                 deltaProgress.Report(progress);
-            });
+            }, deltaBuilderItem.IncludeRegexes);
 
         await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), compressProgress);
     }
@@ -141,7 +141,7 @@ public class ReleaseBuilder<T> where T : class
     private async Task BuildCopyItem(ReleaseMetadataBuilder<T> metadata, CopyBuilderItem<T> copyBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
         using var packageOutputPath = new TemporaryFolderAllocation();
-        var packageMetadata = await Package<T>.CreateAsync(copyBuilderItem.FolderPath, packageOutputPath.FolderPath, copyBuilderItem.Version, copyBuilderItem.Data, copyBuilderItem.IgnoreRegexes);
+        var packageMetadata = await Package<T>.CreateAsync(copyBuilderItem.FolderPath, packageOutputPath.FolderPath, copyBuilderItem.Version, copyBuilderItem.Data, copyBuilderItem.IgnoreRegexes, copyBuilderItem.IncludeRegexes);
         await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
     }
 
