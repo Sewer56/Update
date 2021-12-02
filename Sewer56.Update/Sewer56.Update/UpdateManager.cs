@@ -34,7 +34,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
     /// </summary>
     public readonly IPackageExtractor Extractor;
 
-    private readonly string _storageDirPath;
+    private Lazy<string> _storageDirPath;
     private bool _cleanupOnDispose = true;
 
     /// <inheritdoc />
@@ -45,9 +45,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         Updatee = updatee;
         Resolver = resolver;
         Extractor = extractor;
-
-        // Set storage directory path
-        _storageDirPath = Utilities.MakeUniqueFolder(Path.GetTempPath());
+        _storageDirPath = new Lazy<string>(() => Utilities.MakeUniqueFolder(Path.GetTempPath()));
     }
 
     /// <summary>
@@ -80,8 +78,8 @@ public class UpdateManager<T> : IUpdateManager where T : class
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        if (!string.IsNullOrEmpty(_storageDirPath) && _cleanupOnDispose)
-            IOEx.TryDeleteDirectory(_storageDirPath, true);
+        if (_storageDirPath.IsValueCreated && _cleanupOnDispose)
+            IOEx.TryDeleteDirectory(_storageDirPath.Value, true);
     }
 
     /// <inheritdoc />
@@ -131,10 +129,10 @@ public class UpdateManager<T> : IUpdateManager where T : class
         var result = new List<NuGetVersion>();
 
         // Enumerate all immediate directories in storage
-        if (!Directory.Exists(_storageDirPath)) 
+        if (!Directory.Exists(_storageDirPath.Value)) 
             return result;
 
-        foreach (var packageContentDirPath in Directory.EnumerateDirectories(_storageDirPath))
+        foreach (var packageContentDirPath in Directory.EnumerateDirectories(_storageDirPath.Value))
         {
             // Get directory name
             var packageContentDirName = Path.GetFileName(packageContentDirPath);
@@ -162,7 +160,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         var packageContentDirPath = GetPackageContentDirPath_Internal(version);
 
         // Ensure storage directory exists
-        Directory.CreateDirectory(_storageDirPath);
+        Directory.CreateDirectory(_storageDirPath.Value);
 
         // Download package
         await Resolver.DownloadPackageAsync(version, packageFilePath, 
@@ -242,9 +240,9 @@ public class UpdateManager<T> : IUpdateManager where T : class
         return Directory.Exists(path);
     }
 
-    private string GetPackageFilePath(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}.onv");
-    
-    private string GetPackageContentDirPath_Internal(NuGetVersion version) => Path.Combine(_storageDirPath, $"{version}");
+    private string GetPackageFilePath(NuGetVersion version) => Path.Combine(_storageDirPath.Value, $"{version}.onv");
+
+    private string GetPackageContentDirPath_Internal(NuGetVersion version) => Path.Combine(_storageDirPath.Value!, $"{version}");
 
     private void EnsureUpdatePrepared(NuGetVersion version)
     {
