@@ -227,7 +227,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
         }
 
         // Ensure Updatee isn't Currently Used
-        if (!string.IsNullOrEmpty(Updatee.ExecutablePath) && !IOEx.CheckFileAccess(Updatee.ExecutablePath))
+        if (!string.IsNullOrEmpty(Updatee.ExecutablePath) && File.Exists(Updatee.ExecutablePath) && !IOEx.CheckFileAccess(Updatee.ExecutablePath))
             throw new FileInUseException(Updatee.ExecutablePath!);
 
         // Parse out the package contents.
