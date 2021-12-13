@@ -32,6 +32,7 @@ public class SevenZipSharpArchiver : IPackageArchiver
             CompressionMode = CompressionMode.Create,
             IncludeEmptyDirectories = false,
             DirectoryStructure      = true,
+            FastCompression         = _settings.UseFastCompression,
 
             ArchiveFormat = _settings.ArchiveFormat,
             CompressionLevel = _settings.CompressionLevel,
@@ -78,4 +79,9 @@ public class SevenZipSharpArchiverSettings
     /// The compression method to use.
     /// </summary>
     public CompressionMethod CompressionMethod { get; set; } = CompressionMethod.Lzma2;
+
+    /// <summary>
+    /// Compresses without sending events about current progress to improve speed.
+    /// </summary>
+    public bool UseFastCompression { get; set; } = false;
 }
