@@ -39,7 +39,12 @@ public class ProgressSlicer
             lock (_splitTotals)
             {
                 _splitTotals[index] = multiplier * p;
-                _output?.Report(_splitTotals.Values.Sum());
+
+                double sum = 0.0;
+                foreach (var value in _splitTotals.Values)
+                    sum += value;
+
+                _output?.Report(sum);
             }
         });
     }
