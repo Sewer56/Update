@@ -15,7 +15,7 @@ public static class GameBananaUtilities
     /// <summary>
     /// Maximum file name length accepted by GameBanana.
     /// </summary>
-    public const int MaxFileNameLength = 40;
+    public const int MaxFileNameLength = 100;
 
     /// <summary>
     /// Maximum file name length GameBanana accepts without editing the file name.
