@@ -73,42 +73,39 @@ public class ReleaseBuilder<T> where T : class
         var progressMixer   = new ProgressSlicer(progress);
         var singleItemProgress = (double) 1 / Items.Count;
         using var concurrencySemaphore = new SemaphoreSlim(args.MaxParallelism);
-        Task? task = default;
+        var tasks = new Task [Items.Count];
 
         for (var x = 0; x < Items.Count; x++)
         {
-            await concurrencySemaphore.WaitAsync();
             var item = Items[x];
-            var itemProgress = progressMixer.Slice(singleItemProgress);
-            switch (item)
+            tasks[x] = Task.Run(async () =>
             {
-                case ExistingPackageBuilderItem existingPackageItem:
-                    task = BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
-                    break;
-                case CopyBuilderItem<T> copyBuilderItem:
-                    task = BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
-                    break;
-                case DeltaBuilderItem<T> deltaBuilderItem:
-                    task = BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
-                    break;
-            }
-
-            if (task == null)
-            {
-                concurrencySemaphore.Release();
-                continue;
-            }
-
-            #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            task.ContinueWith(task1 =>
-            {
-                concurrencySemaphore.Release();
+                await concurrencySemaphore.WaitAsync();
+                try
+                {
+                    var itemProgress = progressMixer.Slice(singleItemProgress);
+                    switch (item)
+                    {
+                        case ExistingPackageBuilderItem existingPackageItem:
+                            await BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
+                            break;
+                        case CopyBuilderItem<T> copyBuilderItem:
+                            await BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
+                            break;
+                        case DeltaBuilderItem<T> deltaBuilderItem:
+                            await BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
+                            break;
+                    }
+                }
+                finally
+                {
+                    concurrencySemaphore.Release();
+                }
             });
         }
 
-        if (task != null)
-            await task;
-        
+        Task.WaitAll(tasks);
+
         var metadata = metadataBuilder.Build();
         await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName);
         progress?.Report(1);
