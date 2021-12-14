@@ -301,7 +301,7 @@ public class UpdateManagerTests : IDisposable
     }
 
 #if !DEBUG
-    [Theory(Timeout = 10000)]
+    [Theory(Timeout = 30000)]
 #else
     [Theory()]
 #endif
