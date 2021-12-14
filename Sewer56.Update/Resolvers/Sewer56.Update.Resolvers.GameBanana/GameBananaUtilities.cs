@@ -10,7 +10,7 @@ namespace Sewer56.Update.Resolvers.GameBanana;
 /// </summary>
 public static class GameBananaUtilities
 {
-    private static Regex GbFileNameRegex = new Regex("[^a-z0-9_-]", RegexOptions.Compiled);
+    private static Regex GbFileNameRegex = new Regex("[^a-z0-9_-]");
 
     /// <summary>
     /// Maximum file name length accepted by GameBanana.

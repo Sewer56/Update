@@ -153,8 +153,8 @@ public class PackageMetadata : IJsonSerializable
     {
         if (Hashes != null)
         {
-            var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));  // Delete if not match 
-            var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x, RegexOptions.Compiled)); // Delete if match.
+            var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x));  // Delete if not match 
+            var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x)); // Delete if match.
             HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes) && path.TryMatchAnyRegex(compiledIncludeRegexes));
         }
     }
@@ -226,8 +226,8 @@ public class PackageMetadata<T> : PackageMetadata where T : class
     /// <param name="includeRegexes">Regex pattern for including files. Overrides <paramref name="ignoreRegexes"/></param>
     public static PackageMetadata<T> CreateFromDirectory(string directory, string version, PackageType packageType = PackageType.Copy, T? data = null, List<string>? ignoreRegexes = null, List<string>? includeRegexes = null)
     {
-        var compiledIgnoreRegexes = ignoreRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
-        var compiledIncludeRegexes = includeRegexes?.Select(x => new Regex(x, RegexOptions.Compiled));
+        var compiledIgnoreRegexes = ignoreRegexes?.Select(x => new Regex(x));
+        var compiledIncludeRegexes = includeRegexes?.Select(x => new Regex(x));
         var hashes = packageType != PackageType.Legacy ? HashSet.Generate(directory, null, path => path.TryMatchAnyRegex(compiledIgnoreRegexes) && !path.TryMatchAnyRegex(compiledIncludeRegexes)) : null;
 
         return new PackageMetadata<T>()
