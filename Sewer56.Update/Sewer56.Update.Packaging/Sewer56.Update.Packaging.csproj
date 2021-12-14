@@ -33,7 +33,7 @@ Contains the necessary component for creating packages and releases.</Descriptio
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Sewer56.DeltaPatchGenerator" Version="1.0.3" />
+    <PackageReference Include="Sewer56.DeltaPatchGenerator" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>
