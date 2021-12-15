@@ -26,7 +26,7 @@ public class SharpCompressExtractor : IPackageExtractor
     public async Task ExtractPackageAsync(string sourceFilePath, string destDirPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         var createdDirectorySet = new CreatedDirectorySet();
-        await using var fileStream = File.Open(sourceFilePath, FileMode.Open);
+        await using var fileStream = File.Open(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
         using IReader? reader = ReaderFactory.Open(fileStream);
 
         long totalStreamSize = fileStream.Length;

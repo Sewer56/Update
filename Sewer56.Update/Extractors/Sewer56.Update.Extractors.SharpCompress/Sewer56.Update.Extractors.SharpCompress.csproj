@@ -12,6 +12,7 @@
     <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -20,7 +20,7 @@ public class ZipPackageExtractor : IPackageExtractor
     public async Task ExtractPackageAsync(string sourceFilePath, string destDirPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         // Read the zip
-        using var archive = ZipFile.OpenRead(sourceFilePath);
+        using var archive = new ZipArchive(new FileStream(sourceFilePath, FileMode.Open, FileAccess.Read, FileShare.Read), ZipArchiveMode.Read, false);
 
         // For progress reporting
         var totalBytes = archive.Entries.Sum(e => e.Length);

@@ -29,7 +29,7 @@ public class ZipPackageArchiver : IPackageArchiver
             var relativePath    = relativeFilePaths[x];
 
             var entry = zipFile.CreateEntry(relativePath, CompressionLevel.Optimal);
-            await using var sourceStream = File.Open(Paths.AppendRelativePath(relativePath, baseDirectory), FileMode.Open, FileAccess.Read);
+            await using var sourceStream = File.Open(Paths.AppendRelativePath(relativePath, baseDirectory), FileMode.Open, FileAccess.Read, FileShare.Read);
             await using var entryStream  = entry.Open();
 
             var progressForFile = progressSlicer.Slice((double) sourceStream.Length / extras.TotalUncompressedSize);
