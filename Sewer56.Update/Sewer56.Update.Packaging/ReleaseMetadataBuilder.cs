@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -14,7 +15,7 @@ namespace Sewer56.Update.Packaging;
 public class ReleaseMetadataBuilder<T> where T : class
 {
     /// <summary />
-    public List<ReleaseMetadataBuilderItem> Packages { get; private set; }= new List<ReleaseMetadataBuilderItem>();
+    public BlockingCollection<ReleaseMetadataBuilderItem> Packages { get; private set; }= new BlockingCollection<ReleaseMetadataBuilderItem>();
 
     /// <summary>
     /// Adds a package to this metadata builder.
