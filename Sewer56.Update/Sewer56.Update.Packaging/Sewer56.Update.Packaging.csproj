@@ -18,7 +18,7 @@ Contains the necessary component for creating packages and releases.</Descriptio
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <PackageTags>update;netcore;dotnet;packaging</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.2</Version>
+    <Version>1.2.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,6 +33,7 @@ Contains the necessary component for creating packages and releases.</Descriptio
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" Version="5.11.0" />
     <PackageReference Include="Sewer56.DeltaPatchGenerator" Version="1.0.4" />
   </ItemGroup>
 

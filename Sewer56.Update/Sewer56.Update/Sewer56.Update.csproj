@@ -20,12 +20,8 @@ This framework is a hard fork of Onova.</Description>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Sewer56, Tyrrrz</Authors>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.2.7</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NuGet.Versioning" Version="5.11.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />

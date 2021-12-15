@@ -41,13 +41,28 @@ public static class JsonSerializableExtensions
     }
 
     /// <summary>
+    /// Reads the current item from a Json Directory or returns the default (non-null) item.
+    /// </summary>
+    /// <param name="serializable">The "this" instance.</param>
+    /// <param name="directory">The directory to read item from.</param>
+    /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
+    /// <param name="token">Allows for cancelling the task.</param>
+    public static async Task<T> ReadFromDirectoryOrDefaultAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
+    {
+        if (CanReadFromDirectory(serializable, directory))
+            return await ReadFromDirectoryAsync<T>(directory, fileName, token);
+
+        return new T();
+    }
+
+    /// <summary>
     /// Reads the current item from a Json Directory.
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="directory">The directory to read item from.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryAsync<T>(this T serializable, string directory, string fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
+    public static async Task<T> ReadFromDirectoryAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
     {
         return await ReadFromDirectoryAsync<T>(directory, fileName, token);
     }

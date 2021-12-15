@@ -106,7 +106,6 @@ public class UpdateManager<T> : IUpdateManager where T : class
 
     /// <summary>
     /// Tries to get metadata for a given package version.
-    /// You can usually obtain the metadata if 
     /// </summary>
     /// <param name="version">The version to get the release metadata for.</param>
     /// <param name="token">The token used for potentially cancelling this method call.</param>

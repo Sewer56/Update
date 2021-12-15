@@ -31,9 +31,10 @@ public class ReleaseMetadataBuilder<T> where T : class
     /// <summary>
     /// Builds the metadata for this release.
     /// </summary>
-    public ReleaseMetadata Build()
+    /// <param name="existingMetadata">Existing metadata object to update. Else a new one is created.</param>
+    public ReleaseMetadata Build(ReleaseMetadata? existingMetadata = null)
     {
-        var result = new ReleaseMetadata();
+        var result = existingMetadata ?? new ReleaseMetadata();
 
         foreach (var package in Packages)
         {
