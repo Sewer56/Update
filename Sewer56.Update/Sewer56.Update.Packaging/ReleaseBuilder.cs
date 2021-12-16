@@ -84,35 +84,41 @@ public class ReleaseBuilder<T> where T : class
         var progressMixer   = new ProgressSlicer(progress);
         var singleItemProgress = (double) 1 / Items.Count;
         using var concurrencySemaphore = new SemaphoreSlim(args.MaxParallelism);
-        var tasks = new Task [Items.Count];
+        var taskFunctions = new Func<Task>[Items.Count];
+        var tasks = new Task[Items.Count];
 
+        // Make all packages first.
         for (var x = 0; x < Items.Count; x++)
         {
             var item = Items[x];
-            tasks[x] = Task.Run(async () =>
+            var itemProgress = progressMixer.Slice(singleItemProgress);
+            switch (item)
             {
-                await concurrencySemaphore.WaitAsync();
-                try
-                {
-                    var itemProgress = progressMixer.Slice(singleItemProgress);
-                    switch (item)
-                    {
-                        case ExistingPackageBuilderItem existingPackageItem:
-                            await BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
-                            break;
-                        case CopyBuilderItem<T> copyBuilderItem:
-                            await BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
-                            break;
-                        case DeltaBuilderItem<T> deltaBuilderItem:
-                            await BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
-                            break;
-                    }
-                }
-                finally
-                {
-                    concurrencySemaphore.Release();
-                }
+                case ExistingPackageBuilderItem existingPackageItem:
+                    taskFunctions[x] = await BuildExistingPackageItem(metadataBuilder, existingPackageItem, args, itemProgress);
+                    break;
+                case CopyBuilderItem<T> copyBuilderItem:
+                    taskFunctions[x] = await BuildCopyItem(metadataBuilder, copyBuilderItem, args, itemProgress);
+                    break;
+                case DeltaBuilderItem<T> deltaBuilderItem:
+                    taskFunctions[x] = await BuildDeltaItem(metadataBuilder, deltaBuilderItem, args, itemProgress);
+                    break;
+            }
+        }
+
+        // Start concurrent compress operations
+        for (int x = 0; x < taskFunctions.Length; x++)
+        {
+            await concurrencySemaphore.WaitAsync();
+#pragma warning disable CS4014
+            
+            var innerTask = taskFunctions[x]();
+            innerTask.ContinueWith(task =>
+            {
+                concurrencySemaphore.Release();
             });
+#pragma warning restore CS4014
+            tasks[x] = innerTask;
         }
 
         Task.WaitAll(tasks);
@@ -207,15 +213,16 @@ public class ReleaseBuilder<T> where T : class
         return (resultVersion, resultPath);
     }
 
-    private async Task BuildExistingPackageItem(ReleaseMetadataBuilder<T> metadata, ExistingPackageBuilderItem existingPackageItem, BuildArgs args, IProgress<double> itemProgress)
+    private async Task<Func<Task>> BuildExistingPackageItem(ReleaseMetadataBuilder<T> metadata, ExistingPackageBuilderItem existingPackageItem, BuildArgs args, IProgress<double> itemProgress)
     {
         var packageMetadata = await Package<T>.ReadMetadataFromDirectoryAsync(existingPackageItem.Path);
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
+        return BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
     }
 
-    private async Task BuildDeltaItem(ReleaseMetadataBuilder<T> metadata, DeltaBuilderItem<T> deltaBuilderItem, BuildArgs args, IProgress<double> itemProgress)
+    private async Task<Func<Task>> BuildDeltaItem(ReleaseMetadataBuilder<T> metadata, DeltaBuilderItem<T> deltaBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
-        using var packageOutputPath = new TemporaryFolderAllocation();
+        var packageOutputPath       = new TemporaryFolderAllocation();
+        GC.SuppressFinalize(packageOutputPath);
         var deltaProgressMixer      = new ProgressSlicer(itemProgress);
         var deltaProgress           = deltaProgressMixer.Slice(0.3);
         var compressProgress        = deltaProgressMixer.Slice(0.7);
@@ -227,17 +234,18 @@ public class ReleaseBuilder<T> where T : class
                 deltaProgress.Report(progress);
             }, deltaBuilderItem.IncludeRegexes);
 
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), compressProgress);
+        return BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), compressProgress, true);
     }
 
-    private async Task BuildCopyItem(ReleaseMetadataBuilder<T> metadata, CopyBuilderItem<T> copyBuilderItem, BuildArgs args, IProgress<double> itemProgress)
+    private async Task<Func<Task>> BuildCopyItem(ReleaseMetadataBuilder<T> metadata, CopyBuilderItem<T> copyBuilderItem, BuildArgs args, IProgress<double> itemProgress)
     {
-        using var packageOutputPath = new TemporaryFolderAllocation();
+        var packageOutputPath = new TemporaryFolderAllocation();
+        GC.SuppressFinalize(packageOutputPath);
         var packageMetadata = await Package<T>.CreateAsync(copyBuilderItem.FolderPath, packageOutputPath.FolderPath, copyBuilderItem.Version, copyBuilderItem.Data, copyBuilderItem.IgnoreRegexes, copyBuilderItem.IncludeRegexes);
-        await BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
+        return BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress, true);
     }
 
-    private async Task BuildItemCommon(ReleaseMetadataBuilder<T> metadata, BuildArgs args, PackageMetadata<T> packageMetadata, List<string> packageFiles, IProgress<double> progress)
+    private Func<Task> BuildItemCommon(ReleaseMetadataBuilder<T> metadata, BuildArgs args, PackageMetadata<T> packageMetadata, List<string> packageFiles, IProgress<double> progress, bool deleteDirectory = false)
     {
         var fileName = GetPackageFileName(packageMetadata, args);
         metadata.AddPackage(new ReleaseMetadataBuilder<T>.ReleaseMetadataBuilderItem()
@@ -247,11 +255,17 @@ public class ReleaseBuilder<T> where T : class
         });
 
         packageFiles.Add(packageMetadata.GetDefaultFileName());
-        await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), new CreateArchiveExtras()
+        return async () =>
         {
-            Metadata = packageMetadata,
-            TotalUncompressedSize = IPackageArchiver.GetTotalFileSize(packageFiles, packageMetadata.FolderPath!)
-        }, progress);
+            await args.PackageArchiver.CreateArchiveAsync(packageFiles, packageMetadata.FolderPath!, Path.Combine(args.OutputFolder, fileName), new CreateArchiveExtras()
+            {
+                Metadata = packageMetadata,
+                TotalUncompressedSize = IPackageArchiver.GetTotalFileSize(packageFiles, packageMetadata.FolderPath!)
+            }, progress);
+
+            if (deleteDirectory)
+                IOEx.TryDeleteDirectory(packageMetadata.FolderPath!);
+        };
     }
 
     [SuppressMessage("ReSharper", "InvokeAsExtensionMethod")]
