@@ -22,8 +22,12 @@ namespace Sewer56.Update.Resolvers;
 /// </summary>
 public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSize
 {
+    /// <summary>
+    /// The local filesystem folder associated with this repository.
+    /// </summary>
+    public string RepositoryFolder { get; }
+
     private ReleaseMetadata? _releases;
-    private string _repositoryFolder;
     private CommonPackageResolverSettings _commonResolverSettings;
 
     /// <summary/>
@@ -31,12 +35,12 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
     /// <param name="resolverSettings">Settings that override how most package resolvers work.</param>
     public LocalPackageResolver(string repositoryFolder, CommonPackageResolverSettings? resolverSettings = null)
     {
-        _repositoryFolder = repositoryFolder;
+        RepositoryFolder = repositoryFolder;
         _commonResolverSettings = resolverSettings ?? new CommonPackageResolverSettings();
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(_repositoryFolder, _commonResolverSettings.MetadataFileName);
+    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(RepositoryFolder, _commonResolverSettings.MetadataFileName);
 
     /// <inheritdoc />
     public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));
@@ -61,6 +65,6 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
         if (releaseItem == null)
             throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
 
-        return Path.Combine(_repositoryFolder, releaseItem.FileName);
+        return Path.Combine(RepositoryFolder, releaseItem.FileName);
     }
 }

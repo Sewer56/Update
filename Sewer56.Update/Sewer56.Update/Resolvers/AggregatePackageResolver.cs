@@ -16,6 +16,11 @@ namespace Sewer56.Update.Resolvers;
 /// </summary>
 public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize
 {
+    /// <summary>
+    /// Number of resolvers internally in this aggregate resolver.
+    /// </summary>
+    public int Count => _resolverItems.Length;
+
     private AggregatePackageResolverItem[] _resolverItems;
     private bool _hasAcquiredPackages;
 
