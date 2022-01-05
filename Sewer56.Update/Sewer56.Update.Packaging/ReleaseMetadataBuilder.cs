@@ -18,6 +18,21 @@ public class ReleaseMetadataBuilder<T> where T : class
     public BlockingCollection<ReleaseMetadataBuilderItem> Packages { get; private set; }= new BlockingCollection<ReleaseMetadataBuilderItem>();
 
     /// <summary>
+    /// Extra data to add to the release.
+    /// </summary>
+    public object? ExtraData { get; private set; }
+
+    /// <summary>
+    /// Adds extra data to the release metadata.
+    /// </summary>
+    /// <returns>The package metadata.</returns>
+    public ReleaseMetadataBuilder<T> AddExtraData(object? extraData)
+    {
+        ExtraData = extraData;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a package to this metadata builder.
     /// </summary>
     /// <returns>The package metadata.</returns>
@@ -36,6 +51,7 @@ public class ReleaseMetadataBuilder<T> where T : class
     public ReleaseMetadata Build(ReleaseMetadata? existingMetadata = null)
     {
         var result = existingMetadata ?? new ReleaseMetadata();
+        result.ExtraData = ExtraData;
 
         foreach (var package in Packages)
         {

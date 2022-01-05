@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sewer56.DeltaPatchGenerator.Lib;
 using Sewer56.DeltaPatchGenerator.Lib.Model;
@@ -25,6 +26,13 @@ public class ReleaseMetadata : IJsonSerializable
     public List<ReleaseItem> Releases { get; set; } = new List<ReleaseItem>();
 
     /// <summary>
+    /// Stores extra data.
+    /// Contents are specific to package consumer.
+    /// Consider using <see cref="GetExtraData{T}"/>.
+    /// </summary>
+    public object? ExtraData { get; set; }
+
+    /// <summary>
     /// Returns the most appropriate release for a given version. 
     /// </summary>
     /// <param name="version">The release version to get.</param>
@@ -43,6 +51,25 @@ public class ReleaseMetadata : IJsonSerializable
 
         return null;
     }
+
+    /// <summary>
+    /// Gets extra data as an instanca of Type T
+    /// </summary>
+    /// <typeparam name="T">Any type T containing extra data.</typeparam>
+    /// <returns>Extra data casted to desired return type.</returns>
+    public T? GetExtraData<T>() where T : class
+    {
+        if (ExtraData is JsonElement element)
+            return JsonSerializer.Deserialize<T>(element.GetRawText());
+
+        return ExtraData as T;
+    }
+
+    /// <summary>
+    /// Sets extra data as an instance of Type T
+    /// </summary>
+    /// <typeparam name="T">Any type T containing extra data.</typeparam>
+    public void SetExtraData<T>(T value) where T : class => ExtraData = value;
 }
 
 /// <summary>

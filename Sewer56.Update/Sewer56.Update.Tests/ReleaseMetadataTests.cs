@@ -5,10 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
+using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Enums;
+using Sewer56.Update.Packaging.Interfaces;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
+using Sewer56.Update.Tests.TestUtilities;
 using Xunit;
 
 namespace Sewer56.Update.Tests;
@@ -102,5 +105,33 @@ public class ReleaseMetadataTests
         Assert.NotNull(releaseItem);
         Assert.Equal("2.0", releaseItem.Version);
         Assert.Equal(PackageType.Delta, releaseItem.ReleaseType);
+    }
+
+    [Fact]
+    public async Task GetRelease_CanPreserveExtraData()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        var extraData = new DummyStruct()
+        {
+            Boolean = true, 
+            Float   = 42f,
+            Integer = 333,
+            String  = "Test String"
+        };
+
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            ReleaseExtraData = extraData
+        });
+
+        // Act
+        var release = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(this.OutputFolder);
+
+        // Assert
+        Assert.Equal(extraData, metadata.GetExtraData<DummyStruct>());
+        Assert.Equal(extraData, release.GetExtraData<DummyStruct>());
     }
 }
