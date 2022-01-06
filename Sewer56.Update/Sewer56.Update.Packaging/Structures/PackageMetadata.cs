@@ -210,9 +210,10 @@ public class PackageMetadata<T> : PackageMetadata where T : class
     /// </summary>
     /// <param name="directory">The directory to create package from.</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<PackageMetadata<T>> ReadFromDirectoryAsync(string directory, CancellationToken token = default)
+    public static async Task<PackageMetadata<T>?> ReadFromDirectoryAsync(string directory, CancellationToken token = default)
     {
-        return await JsonSerializableExtensions.ReadFromDirectoryAsync<PackageMetadata<T>>(directory, null, token);
+        var instance = Singleton<PackageMetadata<T>>.Instance;
+        return await instance.ReadFromDirectoryOrNullAsync(directory, null, token);
     }
 
     /// <summary>

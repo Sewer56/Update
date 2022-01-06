@@ -24,14 +24,14 @@ public static class Package<T> where T : class
     /// </summary>
     /// <param name="directory">The directory to check.</param>
     /// <returns>If the package contains metadata.</returns>
-    public static bool HasMetadata(string directory) => Singleton<PackageMetadata<T>>.Instance.CanReadFromDirectory(directory);
+    public static bool HasMetadata(string directory) => Singleton<PackageMetadata<T>>.Instance.CanReadFromDirectory(directory, null, out _, out _);
 
     /// <summary>
     /// Creates package metadata from a given directory.
     /// </summary>
     /// <param name="directory">The directory to create package from.</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<PackageMetadata<T>> ReadMetadataFromDirectoryAsync(string directory, CancellationToken token = default) => await PackageMetadata<T>.ReadFromDirectoryAsync(directory, token);
+    public static async Task<PackageMetadata<T>?> ReadMetadataFromDirectoryAsync(string directory, CancellationToken token = default) => await PackageMetadata<T>.ReadFromDirectoryAsync(directory, token);
 
     /// <summary>
     /// Creates package metadata from a given directory.
@@ -40,10 +40,8 @@ public static class Package<T> where T : class
     /// <param name="token">Allows for cancelling the task.</param>
     public static async Task<PackageMetadata<T>> ReadOrCreateLegacyMetadataFromDirectoryAsync(string directory, CancellationToken token = default)
     {
-        if (HasMetadata(directory))
-            return await ReadMetadataFromDirectoryAsync(directory, token);
-
-        return PackageMetadata<T>.CreateFromDirectory(directory, "1.0", PackageType.Legacy);
+        var result = (await ReadMetadataFromDirectoryAsync(directory, token))!;
+        return result ?? PackageMetadata<T>.CreateFromDirectory(directory, "1.0", PackageType.Legacy);
     }
 
     /// <summary>

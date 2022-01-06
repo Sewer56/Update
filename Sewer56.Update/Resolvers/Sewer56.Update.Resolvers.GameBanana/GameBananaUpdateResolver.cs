@@ -67,7 +67,7 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
             return;
         }
 
-        _releases = Singleton<ReleaseMetadata>.Instance.ReadFromData(bytes);
+        _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDataAsync(bytes);
     }
 
     /// <inheritdoc />

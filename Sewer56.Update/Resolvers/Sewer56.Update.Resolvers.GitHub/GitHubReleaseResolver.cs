@@ -11,6 +11,7 @@ using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
+using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Structures;
 using FileMode = Octokit.FileMode;
@@ -86,7 +87,8 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
     {
         var releases = await _client!.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
         var release = releases.FirstOrDefault(x => new NuGetVersion(x.TagName).Equals(version));
-        var releaseMetadataAsset = release!.Assets.FirstOrDefault(x => x.Name == _commonResolverSettings.MetadataFileName);
+        var possibleMetadataNames = JsonCompressionExtensions.GetPossibleFilePaths(_commonResolverSettings.MetadataFileName);
+        var releaseMetadataAsset  = release!.Assets.FirstOrDefault(x => possibleMetadataNames.Contains(x.Name));
 
         using var webClient = new WebClient();
         string? releaseItemName = null;
@@ -94,8 +96,9 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
         // Find Release File
         if (releaseMetadataAsset != null)
         {
+            var compressionScheme = JsonCompressionExtensions.GetCompressionFromFileName(releaseMetadataAsset.Name);
             var releaseMetadataBytes = await webClient.DownloadDataTaskAsync(releaseMetadataAsset.BrowserDownloadUrl);
-            var releaseMetadata = Singleton<ReleaseMetadata>.Instance.ReadFromData(releaseMetadataBytes);
+            var releaseMetadata = await Singleton<ReleaseMetadata>.Instance.ReadFromDataAsync(releaseMetadataBytes, compressionScheme);
             releaseItemName = releaseMetadata.GetRelease(version.ToString(), verificationInfo)!.FileName;
         }
         else

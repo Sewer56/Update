@@ -128,7 +128,7 @@ public class ReleaseMetadataTests
         });
 
         // Act
-        var release = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(this.OutputFolder);
+        var release = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryOrDefaultAsync(this.OutputFolder);
 
         // Assert
         Assert.Equal(extraData, metadata.GetExtraData<DummyStruct>());

@@ -108,6 +108,26 @@ public class GitHubReleaseResolverTests
     }
 
     [Fact]
+    public async Task GetPackageVersionsAsync_CanDownloadItem_WithCompressedMetadataFile()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+
+        // Act
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration, new CommonPackageResolverSettings()
+        {
+            MetadataFileName = "PackageComp.json",
+            AllowPrereleases = true
+        });
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        var version = versions.Find(x => x.Equals(new NuGetVersion("3.0-meta")));
+        await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
     public async Task GetPackageVersionsAsync_CanDownloadItem_WithFallbackPattern()
     {
         var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");

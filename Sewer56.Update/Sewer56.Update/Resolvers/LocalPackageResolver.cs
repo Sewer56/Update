@@ -40,7 +40,7 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryAsync(RepositoryFolder, _commonResolverSettings.MetadataFileName);
+    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryOrDefaultAsync(RepositoryFolder, _commonResolverSettings.MetadataFileName);
 
     /// <inheritdoc />
     public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));

@@ -125,7 +125,7 @@ public class ReleaseBuilder<T> where T : class
 
         metadataBuilder.AddExtraData(args.ReleaseExtraData);
         metadata = metadataBuilder.Build(metadata);
-        await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName);
+        await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName, JsonCompression.Brotli);
         progress?.Report(1);
         return metadata;
     }
@@ -139,6 +139,9 @@ public class ReleaseBuilder<T> where T : class
                 case ExistingPackageBuilderItem existingPackageItem:
                 {
                     var existingPackageMeta = await Package<T>.ReadMetadataFromDirectoryAsync(existingPackageItem.Path);
+                    if (existingPackageMeta == null)
+                        throw new FileNotFoundException($"Failed to read package metadata from existing directory. Directory: {existingPackageItem.Path}");
+
                     var previousVersion     = await GetPreviousVersion(existingPackageMeta.Version, metadata, args, tempFolderAllocationCollection);
                     if (previousVersion.version == null)
                         continue;
@@ -217,6 +220,9 @@ public class ReleaseBuilder<T> where T : class
     private async Task<Func<Task>> BuildExistingPackageItem(ReleaseMetadataBuilder<T> metadata, ExistingPackageBuilderItem existingPackageItem, BuildArgs args, IProgress<double> itemProgress)
     {
         var packageMetadata = await Package<T>.ReadMetadataFromDirectoryAsync(existingPackageItem.Path);
+        if (packageMetadata == null)
+            throw new FileNotFoundException($"Failed to read package metadata from existing directory. Directory: {existingPackageItem.Path}");
+
         return BuildItemCommon(metadata, args, packageMetadata, GetPackageFileList(packageMetadata), itemProgress);
     }
 

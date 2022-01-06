@@ -1,9 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Sewer56.Update.Misc;
+using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 
 namespace Sewer56.Update.Packaging.Interfaces;
@@ -34,10 +37,12 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="serializable">The serializable item.</param>
     /// <param name="filePath">Path to the file to write.</param>
-    public static async Task ToJsonAsync<T>(this T serializable, string filePath) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode to use for the file write operation.</param>
+    public static async Task ToJsonAsync<T>(this T serializable, string filePath, JsonCompression compressionMode) where T : IJsonSerializable, new()
     {
         await using var fileStream = File.Open(filePath, FileMode.Create);
-        await JsonSerializer.SerializeAsync(fileStream, serializable);
+        await using var compressionStream = JsonCompressionExtensions.GetStreamForCompression(fileStream, compressionMode);
+        await JsonSerializer.SerializeAsync(compressionStream, serializable);
     }
 
     /// <summary>
@@ -49,36 +54,39 @@ public static class JsonSerializableExtensions
     /// <param name="token">Allows for cancelling the task.</param>
     public static async Task<T> ReadFromDirectoryOrDefaultAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
     {
-        if (CanReadFromDirectory(serializable, directory))
-            return await ReadFromDirectoryAsync<T>(directory, fileName, token);
+        if (CanReadFromDirectory(serializable, directory, fileName, out var compressionMode, out var fullFilePath))
+            return await ReadFromDirectoryAsync_Internal<T>(fullFilePath, token, compressionMode);
 
         return new T();
     }
 
     /// <summary>
-    /// Reads the current item from a Json Directory.
+    /// Reads the current item from a Json Directory or returns the default (null) item.
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="directory">The directory to read item from.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
+    public static async Task<T?> ReadFromDirectoryOrNullAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : class, IJsonSerializable, new() 
     {
-        return await ReadFromDirectoryAsync<T>(directory, fileName, token);
+        if (CanReadFromDirectory(serializable, directory, fileName, out var compressionMode, out var fullFilePath))
+            return await ReadFromDirectoryAsync_Internal<T>(fullFilePath, token, compressionMode);
+
+        return null;
     }
 
     /// <summary>
     /// Reads the current item from a Json Directory.
     /// </summary>
-    /// <param name="directory">The directory to read item from.</param>
-    /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
+    /// <param name="fullFilePath">Full file path to the file.</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryAsync<T>(string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode to use for the file to be read.</param>
+    internal static async Task<T> ReadFromDirectoryAsync_Internal<T>(string fullFilePath, CancellationToken token = default, JsonCompression compressionMode = JsonCompression.Brotli) where T : IJsonSerializable, new()
     {
-        var path = Singleton<T>.Instance.GetMetadataPath(directory, fileName);
-        await using var fileStream = File.Open(path, FileMode.Open);
-        var metadata = await JsonSerializer.DeserializeAsync<T>(fileStream, null, token);
-        metadata!.AfterDeserialize(metadata, path);
+        await using var fileStream = File.Open(fullFilePath, FileMode.Open);
+        await using var decompressionStream = JsonCompressionExtensions.GetStreamForDecompression(fileStream, compressionMode);
+        var metadata = await JsonSerializer.DeserializeAsync<T>(decompressionStream, null, token);
+        metadata!.AfterDeserialize(metadata, fullFilePath);
         return metadata;
     }
 
@@ -108,18 +116,23 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="data">The data containing the file to deserialize</param>
-    public static T ReadFromData<T>(this T serializable, Span<byte> data) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode for the file to read.</param>
+    public static async Task<T> ReadFromDataAsync<T>(this T serializable, byte[] data, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
-        return ReadFromData<T>(data);
+        return await ReadFromDataAsync<T>(data, compressionMode);
     }
 
     /// <summary>
     /// Reads the current item from raw data.
     /// </summary>
     /// <param name="data">The data containing the file to deserialize</param>
-    public static T ReadFromData<T>(Span<byte> data) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode for the file to read.</param>
+    public static async Task<T> ReadFromDataAsync<T>(byte[] data, JsonCompression compressionMode) where T : IJsonSerializable, new()
     {
-        var metadata = JsonSerializer.Deserialize<T>(data);
+        await using var memoryStream      = new MemoryStream(data);
+        await using var decompressStream  = JsonCompressionExtensions.GetStreamForDecompression(memoryStream, compressionMode);
+        
+        var metadata = await JsonSerializer.DeserializeAsync<T>(decompressStream);
         metadata!.AfterDeserialize(metadata, "");
         return metadata;
     }
@@ -130,9 +143,11 @@ public static class JsonSerializableExtensions
     /// <param name="serializable">The serializable item.</param>
     /// <param name="folderPath">Path to the file to write Json file in.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
-    public static async Task ToDirectoryAsync<T>(this T serializable, string folderPath, string? fileName = null) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode to use for the files.</param>
+    public static async Task ToDirectoryAsync<T>(this T serializable, string folderPath, string? fileName = null, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
-        await ToJsonAsync(serializable, Path.Combine(folderPath, fileName ?? serializable.GetDefaultFileName()));
+        var fName = Path.Combine(folderPath, fileName ?? serializable.GetDefaultFileName());
+        await ToJsonAsync(serializable, JsonCompressionExtensions.GetCompressedFileName(fName, compressionMode), compressionMode);
     }
 
     /// <summary>
@@ -140,9 +155,27 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="serializable">The serializable item.</param>
     /// <param name="directory">The directory possibly containing metadata.</param>
-    public static bool CanReadFromDirectory<T>(this T serializable, string directory) where T : IJsonSerializable, new()
+    /// <param name="fileName">Optional custom file name to use for the file.</param>
+    /// <param name="compressionMode">The compression mode used.</param>
+    /// <param name="newFilePath">File path of the file to be read.</param>
+    public static bool CanReadFromDirectory<T>(this T serializable, string directory, string? fileName, out JsonCompression compressionMode, out string newFilePath) where T : IJsonSerializable, new()
     {
-        return File.Exists(GetMetadataPath(serializable, directory));
+        var metaDataPath      = GetMetadataPath(serializable, directory, fileName);
+        var possibleFilePaths = JsonCompressionExtensions.GetPossibleFilePaths(metaDataPath);
+
+        foreach (var filePath in possibleFilePaths)
+        {
+            if (!File.Exists(filePath)) 
+                continue;
+
+            newFilePath = filePath;
+            compressionMode = JsonCompressionExtensions.GetCompressionFromFileName(filePath);
+            return true;
+        }
+
+        newFilePath = "";
+        compressionMode = JsonCompression.None;
+        return false;
     }
 
     internal static string GetMetadataPath<T>(this T serializable, string directory, string? fileName = null) where T : IJsonSerializable, new()
@@ -150,3 +183,4 @@ public static class JsonSerializableExtensions
         return Path.Combine(directory, fileName ?? serializable.GetDefaultFileName());
     }
 }
+

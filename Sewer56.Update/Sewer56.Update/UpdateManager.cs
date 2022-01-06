@@ -109,14 +109,10 @@ public class UpdateManager<T> : IUpdateManager where T : class
     /// </summary>
     /// <param name="version">The version to get the release metadata for.</param>
     /// <param name="token">The token used for potentially cancelling this method call.</param>
-    /// <returns>Null if not found, else the metadata..</returns>
+    /// <returns>Null if not found, else the metadata.</returns>
     public async Task<PackageMetadata<T>?> TryGetPackageMetadataAsync(NuGetVersion version, CancellationToken token = default)
     {
         if (!IsUpdatePrepared(version))
-            return null;
-
-        var packageContentPath = GetPackageContentDirPath_Internal(version);
-        if (!Singleton<PackageMetadata<T>>.Instance.CanReadFromDirectory(packageContentPath))
             return null;
         
         return await PackageMetadata<T>.ReadFromDirectoryAsync(GetPackageContentDirPath_Internal(version), token);
