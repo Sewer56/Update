@@ -95,18 +95,21 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="stream">The stream containing the json to deserialize</param>
-    public static async Task<T> ReadFromStreamAsync<T>(this T serializable, Stream stream) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode for the file to read.</param>
+    public static async Task<T> ReadFromStreamAsync<T>(this T serializable, Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
-        return await ReadFromStreamAsync<T>(stream);
+        return await ReadFromStreamAsync<T>(stream, compressionMode);
     }
 
     /// <summary>
     /// Reads the current item from raw data.
     /// </summary>
     /// <param name="stream">The stream containing the json to deserialize</param>
-    public static async Task<T> ReadFromStreamAsync<T>(Stream stream) where T : IJsonSerializable, new()
+    /// <param name="compressionMode">The compression mode for the file to read.</param>
+    public static async Task<T> ReadFromStreamAsync<T>(Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
-        var metadata = await JsonSerializer.DeserializeAsync<T>(stream);
+        await using var decompressStream = JsonCompressionExtensions.GetStreamForDecompression(stream, compressionMode);
+        var metadata = await JsonSerializer.DeserializeAsync<T>(decompressStream);
         metadata!.AfterDeserialize(metadata, "");
         return metadata;
     }

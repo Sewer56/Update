@@ -13,6 +13,7 @@ using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Interfaces;
+using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Resolvers.GameBanana.Structures;
 using Sewer56.Update.Structures;
@@ -62,8 +63,10 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
         {
             await using var memoryStream    = new MemoryStream(bytes);
             using var zipFile               = new ZipArchive(memoryStream);
-            await using var metadataStream  = zipFile.GetEntry(_commonResolverSettings.MetadataFileName)!.Open();
-            _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromStreamAsync(metadataStream);
+            var firstEntry                  = zipFile.Entries.First();
+            await using var metadataStream  = firstEntry.Open(); 
+            var compressionScheme = JsonCompressionExtensions.GetCompressionFromFileName(firstEntry.Name);
+            _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromStreamAsync(metadataStream, compressionScheme);
             return;
         }
 
@@ -119,14 +122,18 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
 
     private GameBananaItemFile? GetGameBananaMetadataFile(Dictionary<string, GameBananaItemFile> files, out bool isZip)
     {
-        var expectedFileName = GameBananaUtilities.GetFileNameStart(_commonResolverSettings.MetadataFileName);
-        foreach (var file in files)
+        var possibleMetadataNames = JsonCompressionExtensions.GetPossibleFilePaths(_commonResolverSettings.MetadataFileName);
+        foreach (var possibleMetadataName in possibleMetadataNames)
         {
-            if (!file.Value.FileName!.StartsWith(expectedFileName))
-                continue;
+            var expectedFileName = GameBananaUtilities.GetFileNameStart(possibleMetadataName);
+            foreach (var file in files)
+            {
+                if (!file.Value.FileName!.StartsWith(expectedFileName))
+                    continue;
 
-            isZip = Path.GetExtension(file.Value.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase);
-            return file.Value;
+                isZip = Path.GetExtension(file.Value.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase);
+                return file.Value;
+            }
         }
 
         isZip = false;

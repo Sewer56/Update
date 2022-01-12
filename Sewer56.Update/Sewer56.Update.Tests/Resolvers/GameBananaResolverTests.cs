@@ -82,4 +82,25 @@ public class GameBananaResolverTests
         // Assert
         Assert.True(fileSize > 0);
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_SupportsBrotli()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings()
+        {
+            AllowPrereleases = true,
+            MetadataFileName = "Sewer56.Update.BrotliMetadata.json"
+        };
+
+        // Act
+        var resolver = new GameBananaUpdateResolver(ResolverConfiguration, commonResolverSettings);
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        // Assert
+        Assert.Equal(new NuGetVersion("3.0"), versions[2]);
+        Assert.Equal(new NuGetVersion("2.0"), versions[1]);
+        Assert.Equal(new NuGetVersion("1.0"), versions[0]);
+        Assert.Equal(3, versions.Count);
+    }
 }
