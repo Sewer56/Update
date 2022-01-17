@@ -125,7 +125,7 @@ public class ReleaseBuilder<T> where T : class
 
         metadataBuilder.AddExtraData(args.ReleaseExtraData);
         metadata = metadataBuilder.Build(metadata);
-        await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName, JsonCompression.Brotli);
+        await metadata.ToDirectoryAsync(args.OutputFolder, args.MetadataFileName, args.JsonCompressionMode);
         progress?.Report(1);
         return metadata;
     }
@@ -364,6 +364,11 @@ public class BuildArgs
     /// Extra data to add to the package release.
     /// </summary>
     public object? ReleaseExtraData { get; set; }
+
+    /// <summary>
+    /// The JSON Compression Mode to use.
+    /// </summary>
+    public JsonCompression JsonCompressionMode { get; set; } = JsonCompression.Brotli;
 
     /// <summary>
     /// Validates whether the build arguments are correct.
