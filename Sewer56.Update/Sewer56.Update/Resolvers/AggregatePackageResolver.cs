@@ -104,5 +104,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     {
         public IPackageResolver Resolver = default!;
         public List<NuGetVersion> Versions = default!;
+
+        public AggregatePackageResolverItem() { }
     }
 }
