@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 using FluentValidation;
 using Sewer56.Update.Tool.Options;
 
@@ -10,18 +11,22 @@ internal class CreateReleaseOptionsValidator : AbstractValidator<CreateReleaseOp
     {
         RuleFor(x => x.ExistingPackagesPath).Must(x => string.IsNullOrEmpty(x) || File.Exists(x)).WithMessage("Existing Packages Path must point to valid file.");
         RuleFor(x => x.Archiver).IsInEnum().WithMessage("Specified archiver must be valid.");
-        RuleFor(x => x.Archiver).Must(BeACorrectNuGetItem);
+        RuleFor(x => x).Custom(BeACorrectNuGetItem);
     }
 
-    private bool BeACorrectNuGetItem(CreateReleaseOptions options, Archiver archiver)
+    private void BeACorrectNuGetItem(CreateReleaseOptions options, ValidationContext<CreateReleaseOptions> context)
     {
+        var archiver = options.Archiver;
         if (archiver != Archiver.NuGet)
-            return true;
+            return;
 
-        RuleFor(x => x.NuGetId).NotNull().NotEmpty().WithMessage("NuGet Id Must not be Null or Empty");
-        RuleFor(x => x.NuGetDescription).NotNull().NotEmpty().WithMessage("NuGet Description Must not be Null or Empty");
-        RuleFor(x => x.NuGetAuthors).NotNull().NotEmpty().WithMessage("NuGet Authors Must not be Null or Empty");
+        if (string.IsNullOrEmpty(options.NuGetId))
+            context.AddFailure("NuGet Id Must not be Null or Empty");
 
-        return true;
+        if (string.IsNullOrEmpty(options.NuGetDescription))
+            context.AddFailure("NuGet Description Must not be Null or Empty");
+
+        if (options.NuGetAuthors.ToArray().Length > 0)
+            context.AddFailure("NuGet Authors Must not be Null or Empty");
     }
 }

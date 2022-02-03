@@ -17,8 +17,13 @@ namespace Sewer56.Update.Packaging.Structures;
 /// </summary>
 public class ReleaseMetadata : IJsonSerializable
 {
+    /// <summary>
+    /// Gets the default file name for this kind of item.
+    /// </summary>
+    public const string DefaultFileName = "Sewer56.Update.ReleaseMetadata.json";
+
     /// <summary />
-    public string GetDefaultFileName() => "Sewer56.Update.ReleaseMetadata.json";
+    public string GetDefaultFileName() => DefaultFileName;
 
     /// <summary>
     /// Provides a list of all releases available in this metadata.
