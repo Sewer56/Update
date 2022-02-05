@@ -20,7 +20,7 @@ This framework is a hard fork of Onova.</Description>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Sewer56, Tyrrrz</Authors>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.0.1</Version>
+    <Version>2.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
