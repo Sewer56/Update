@@ -23,6 +23,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
 
     private AggregatePackageResolverItem[] _resolverItems;
     private bool _hasAcquiredPackages;
+    private bool _hasInitialised;
 
     /// <summary/>
     /// <param name="resolvers">A list of existing resolvers.</param>
@@ -36,6 +37,10 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// <inheritdoc />
     public async Task InitializeAsync()
     {
+        if (_hasInitialised)
+            return;
+
+        _hasInitialised = true;
         var tasks = new Task[_resolverItems.Length];
         for (var x = 0; x < _resolverItems.Length; x++)
         {

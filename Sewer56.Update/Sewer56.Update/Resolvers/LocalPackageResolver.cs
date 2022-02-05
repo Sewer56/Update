@@ -29,6 +29,7 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
 
     private ReleaseMetadata? _releases;
     private CommonPackageResolverSettings _commonResolverSettings;
+    private bool _hasInitialised;
 
     /// <summary/>
     /// <param name="repositoryFolder">Folder containing packages and package manifest.</param>
@@ -40,7 +41,14 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
     }
 
     /// <inheritdoc />
-    public async Task InitializeAsync() => _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryOrDefaultAsync(RepositoryFolder, _commonResolverSettings.MetadataFileName);
+    public async Task InitializeAsync()
+    {
+        if (_hasInitialised)
+            return;
+
+        _hasInitialised = true;
+        _releases = await Singleton<ReleaseMetadata>.Instance.ReadFromDirectoryOrDefaultAsync(RepositoryFolder, _commonResolverSettings.MetadataFileName);
+    }
 
     /// <inheritdoc />
     public Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default) => Task.FromResult(_releases!.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases));

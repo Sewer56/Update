@@ -14,7 +14,7 @@ namespace Sewer56.Update.Interfaces;
 public interface IPackageResolver
 {
     /// <summary>
-    /// Called only once.
+    /// Should be called only once. However please include guard for code to not be re-ran.
     /// 
     /// Use this for performing any asynchronous initialization (that you cannot do in the constructor) such as
     /// - Reading from cache.

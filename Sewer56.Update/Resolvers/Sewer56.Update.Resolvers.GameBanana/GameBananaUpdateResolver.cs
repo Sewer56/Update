@@ -30,6 +30,7 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
 
     private ReleaseMetadata? _releases;
     private GameBananaItem? _gbItem;
+    private bool _hasInitialised;
 
     /// <summary>
     /// Creates a new instance of the GameBanana update resolver.
@@ -45,6 +46,10 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
     /// <inheritdoc />
     public async Task InitializeAsync()
     {
+        if (_hasInitialised)
+            return;
+
+        _hasInitialised = true;
         _gbItem   = await GameBananaItem.FromTypeAndIdAsync(_configuration.ModType, _configuration.ItemId);
         if (_gbItem == null)
             return;
