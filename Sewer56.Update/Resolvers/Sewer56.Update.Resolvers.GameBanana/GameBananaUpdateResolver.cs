@@ -114,30 +114,54 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
         var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
         if (releaseItem == null)
             throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
+        
+        if (TryGetGameBananaFile(_gbItem!.Files!, releaseItem.FileName, out var isZip, out var gbItemFile))
+            return gbItemFile!.DownloadUrl!;
 
-        var expectedFileName = GameBananaUtilities.GetFileNameStart(releaseItem.FileName);
-        var gbItemFile = _gbItem!.Files!.FirstOrDefault(x => x.Value.FileName!.StartsWith(expectedFileName, StringComparison.OrdinalIgnoreCase)).Value;
-        return gbItemFile.DownloadUrl!;
+        return "";
     }
 
     private GameBananaItemFile? GetGameBananaMetadataFile(Dictionary<string, GameBananaItemFile> files, out bool isZip)
     {
         var possibleMetadataNames = JsonCompressionExtensions.GetPossibleFilePaths(_commonResolverSettings.MetadataFileName);
-        foreach (var possibleMetadataName in possibleMetadataNames)
-        {
-            var expectedFileName = GameBananaUtilities.GetFileNameStart(possibleMetadataName);
-            foreach (var file in files)
-            {
-                if (!file.Value.FileName!.StartsWith(expectedFileName))
-                    continue;
-
-                isZip = Path.GetExtension(file.Value.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase);
-                return file.Value;
-            }
-        }
-
+        if (TryGetGameBananaFile(files, possibleMetadataNames, out isZip, out var gameBananaItemFile))
+            return gameBananaItemFile;
+        
         isZip = false;
         return null;
     }
 
+    private static bool TryGetGameBananaFile(Dictionary<string, GameBananaItemFile> files, IEnumerable<string> fileNames, out bool isZip, out GameBananaItemFile? gameBananaItemFile)
+    {
+        foreach (var fileName in fileNames)
+        {
+            if (TryGetGameBananaFile(files, fileName, out isZip, out gameBananaItemFile))
+                return true;
+        }
+
+        isZip = false;
+        gameBananaItemFile = null;
+        return false;
+    }
+
+    private static bool TryGetGameBananaFile(Dictionary<string, GameBananaItemFile> files, string fileName, out bool isZip, out GameBananaItemFile? gameBananaItemFile)
+    {
+        var possibleFileNames = GameBananaUtilities.GetFileNameStarts(fileName);
+        foreach (var possibleFileName in possibleFileNames)
+        {
+            foreach (var file in files)
+            {
+                if (!file.Value.FileName!.StartsWith(possibleFileName))
+                    continue;
+
+                isZip = Path.GetExtension(file.Value.FileName).Equals(".zip", StringComparison.OrdinalIgnoreCase);
+                gameBananaItemFile = file.Value;
+                return true;
+            }
+        }
+
+        isZip = false;
+        gameBananaItemFile = null;
+        return false;
+    }
 }
