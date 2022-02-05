@@ -12,6 +12,7 @@ using Sewer56.Update.Resolvers;
 using Sewer56.Update.Resolvers.GameBanana;
 using Sewer56.Update.Resolvers.GitHub;
 using Sewer56.Update.Structures;
+using Sewer56.Update.Tests.Mocks;
 using Xunit;
 
 namespace Sewer56.Update.Tests.Resolvers;
@@ -37,6 +38,49 @@ public class AggregateResolverTests
     {
         IOEx.TryDeleteDirectory(Assets.TempFolder);
         Directory.CreateDirectory(PackageFolder);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_IsResilientToExceptions()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new ExceptionPackageResolver(true, false, false),
+            new GameBananaUpdateResolver(GameBananaConfig, commonResolverSettings),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+        
+        // Does not throw
+        await resolver.InitializeAsync();
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_IsResilientToExceptions()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new ExceptionPackageResolver(false, true, false),
+            new GameBananaUpdateResolver(GameBananaConfig, commonResolverSettings),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        // Does not throw
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        // Assert (Shared)
+        Assert.Contains(new NuGetVersion("3.0"), versions);
+        Assert.Contains(new NuGetVersion("2.0"), versions);
+        Assert.Contains(new NuGetVersion("1.0"), versions);
+
+        // Assert (GitHub Only)
+        Assert.Contains(new NuGetVersion("3.0-pre"), versions);
     }
 
     [Fact]
