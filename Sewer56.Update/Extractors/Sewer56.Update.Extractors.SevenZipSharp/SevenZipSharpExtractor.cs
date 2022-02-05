@@ -19,9 +19,10 @@ public class SevenZipSharpExtractor : IPackageExtractor
     public async Task ExtractPackageAsync(string sourceFilePath, string destDirPath, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
         using var extractor = new SevenZipExtractor(sourceFilePath);
+        var destinationFullPath = Path.GetFullPath(destDirPath);
 
-        Directory.CreateDirectory(destDirPath);
+        Directory.CreateDirectory(destinationFullPath);
         extractor.Extracting += (sender, args) => progress?.Report(args.PercentDone / 100.0);
-        await extractor.ExtractArchiveAsync(destDirPath);
+        await extractor.ExtractArchiveAsync(destinationFullPath);
     }
 }
