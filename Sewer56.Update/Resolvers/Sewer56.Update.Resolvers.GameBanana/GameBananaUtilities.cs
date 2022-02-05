@@ -37,11 +37,10 @@ public static class GameBananaUtilities
     /// <returns>The result file name.</returns>
     public static string SanitizeFileName(string fileName, bool replaceDot)
     {
-        // Replace . with _ for the sake of semantic versions with numbers above >9
-        if (replaceDot)
-            fileName = fileName.Replace('.', '_');
-
         var noExtension = Path.GetFileNameWithoutExtension(fileName).ToLower();
+        if (replaceDot)
+            noExtension = noExtension.Replace('.', '_');
+        
         var extension   = Path.GetExtension(fileName);
         var replaced    = GbFileNameRegex.Replace(noExtension, "");
 
