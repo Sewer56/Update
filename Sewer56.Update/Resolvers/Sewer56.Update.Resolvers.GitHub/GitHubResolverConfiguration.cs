@@ -20,4 +20,9 @@ public class GitHubResolverConfiguration
     /// This is a fallback used in cases no Release Metadata file can be found.
     /// </summary>
     public string? LegacyFallbackPattern { get; set; } = null;
+
+    /// <summary>
+    /// Gets the version of each release from the tag assigned to it.
+    /// </summary>
+    public bool InheritVersionFromTag { get; set; } = true;
 }

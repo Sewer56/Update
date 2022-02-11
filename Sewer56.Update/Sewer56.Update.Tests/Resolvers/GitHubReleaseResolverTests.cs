@@ -43,6 +43,7 @@ public class GitHubReleaseResolverTests
             // Act
             commonResolverSettings.AllowPrereleases = false;
             var resolver = new GitHubReleaseResolver(ResolverConfiguration, commonResolverSettings);
+            await resolver.InitializeAsync();
             var versions = await resolver.GetPackageVersionsAsync();
 
             // Assert
@@ -53,6 +54,8 @@ public class GitHubReleaseResolverTests
 
             // Act for Prerelease
             commonResolverSettings.AllowPrereleases = true;
+            resolver = new GitHubReleaseResolver(ResolverConfiguration, commonResolverSettings);
+            await resolver.InitializeAsync();
             var versionsWithPrereleases = await resolver.GetPackageVersionsAsync();
             Assert.Equal(5, versionsWithPrereleases.Count);
         }
@@ -67,6 +70,7 @@ public class GitHubReleaseResolverTests
         };
 
         var resolver = new GitHubReleaseResolver(ResolverConfiguration, commonResolverSettings);
+        await resolver.InitializeAsync();
         var versions = await resolver.GetPackageVersionsAsync();
 
         Assert.Contains(versions, x => x.Equals(new NuGetVersion("3.0-meta")));
@@ -79,8 +83,26 @@ public class GitHubReleaseResolverTests
 
         // Act
         var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
         var versions = await resolver.GetPackageVersionsAsync();
         
+        await resolver.DownloadPackageAsync(versions[0], packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanDownloadItem_WithNonTagBased()
+    {
+        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
+
+        // Act
+        ResolverConfiguration.InheritVersionFromTag = false;
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+
         await resolver.DownloadPackageAsync(versions[0], packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
 
         // Assert
@@ -99,6 +121,7 @@ public class GitHubReleaseResolverTests
             AllowPrereleases = true
         });
 
+        await resolver.InitializeAsync();
         var versions = await resolver.GetPackageVersionsAsync();
         var version = versions.Find(x => x.Equals(new NuGetVersion("3.0-meta")));
         await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
@@ -119,6 +142,7 @@ public class GitHubReleaseResolverTests
             AllowPrereleases = true
         });
 
+        await resolver.InitializeAsync();
         var versions = await resolver.GetPackageVersionsAsync();
         var version = versions.Find(x => x.Equals(new NuGetVersion("3.0-meta")));
         await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
@@ -140,6 +164,7 @@ public class GitHubReleaseResolverTests
             AllowPrereleases = false
         });
 
+        await resolver.InitializeAsync();
         var versions = await resolver.GetPackageVersionsAsync();
         var version = versions.Find(x => x.Equals(new NuGetVersion("3.0")));
         await resolver.DownloadPackageAsync(version, packageFilePath, new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
@@ -153,8 +178,9 @@ public class GitHubReleaseResolverTests
     {
         // Act
         var resolver = new GitHubReleaseResolver(ResolverConfiguration);
-        var versions = await resolver.GetPackageVersionsAsync();
+        await resolver.InitializeAsync();
 
+        var versions = await resolver.GetPackageVersionsAsync();
         var fileSize = await resolver.GetDownloadFileSizeAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
 
         // Assert
