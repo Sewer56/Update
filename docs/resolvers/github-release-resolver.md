@@ -24,14 +24,26 @@ Example Repository: <https://github.com/Sewer56/Update.Test.Repo/releases>
 
 ![Example](../images/release.png)
 
-This implementation fetches releases by using the GitHub API, with tags being used to denote release versions.
-If you tag your release with 1.1, the returned version will be 1.1. 
+This implementation fetches releases by using the GitHub API, and has two modes of operation, one which uses versions from the release tag (default) and one which uses the files uploaded in the latest GitHub Release.
+
+#### Version from Tag (Default)
+
+Use case: When there is only 1 package/download per repository.  
+
+In this mode, tags are used to denote release versions.  
+If you tag your release with 1.1, the returned version will be 1.1.  
 
 Releases should consist of only the packages with the same version as the tag they are under.  
 If you have a release with version 1.1, you should only include the following packages in the release:  
 
 - Regular (Copy) Package with Version 1.1  
-- Delta Package from $(PreviousVersion) to 1.1 [Optional]
+- Delta Package from $(PreviousVersion) to 1.1 [Optional]  
+
+#### Version from Metadata File
+
+Use case: When there are multiple packages/downloads per repository.  
+
+This one works like all the other resolvers. Simply upload all of the files to the latest release (or pre-release).  
 
 ### Caching
 
