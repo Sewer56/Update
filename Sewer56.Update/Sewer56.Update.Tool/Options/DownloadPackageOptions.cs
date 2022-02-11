@@ -30,6 +30,7 @@ internal class DownloadPackageOptions : IGitHubReleasesDownloadOptions, INuGetDo
     public string GitHubUserName { get; set; }
     public string GitHubRepositoryName { get; set; }
     public string GitHubLegacyFallbackPattern { get; set; }
+    public bool GitHubInheritVersionFromTag { get; set; }
 
     /* NuGet Specific */
     public string NuGetPackageId { get; set; }

@@ -70,6 +70,7 @@ internal class Program
                 UserName = options.GitHubUserName,
                 RepositoryName = options.GitHubRepositoryName,
                 LegacyFallbackPattern = options.GitHubLegacyFallbackPattern,
+                InheritVersionFromTag = options.GitHubInheritVersionFromTag
             }, commonResolverSettings),
             DownloadSource.NuGet => new NuGetUpdateResolver(new NuGetUpdateResolverSettings()
             {

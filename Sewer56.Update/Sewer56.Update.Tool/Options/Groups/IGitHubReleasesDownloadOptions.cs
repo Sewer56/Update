@@ -12,4 +12,7 @@ public interface IGitHubReleasesDownloadOptions
     
     [Option(SetName = "GitHub Releases", HelpText = $"[{nameof(DownloadSource.GitHub)} Specific] Allows you to specify a Wildcard pattern (e.g. *Update.zip) for the file to be downloaded. This is a fallback used in cases no Release Metadata file can be found.")]
     public string GitHubLegacyFallbackPattern { get; set; }
+
+    [Option(SetName = "GitHub Releases", HelpText = $"[{nameof(DownloadSource.GitHub)} Specific] Uses the release tag as the version as opposed to grabbing the version from the release metadata file.", Default = true)]
+    public bool GitHubInheritVersionFromTag { get; set; }
 }
