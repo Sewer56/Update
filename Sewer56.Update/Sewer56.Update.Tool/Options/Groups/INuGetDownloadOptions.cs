@@ -11,5 +11,5 @@ public interface INuGetDownloadOptions
     public string NuGetFeedUrl { get; set; }
     
     [Option(SetName = "NuGet", HelpText = $"[{nameof(DownloadSource.NuGet)} Specific] Set to true to allow downloading of unlisted packages.", Default = false)]
-    public bool NuGetAllowUnlisted { get; set; }
+    public bool? NuGetAllowUnlisted { get; set; }
 }

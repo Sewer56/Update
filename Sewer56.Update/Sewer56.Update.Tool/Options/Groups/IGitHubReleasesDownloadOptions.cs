@@ -14,5 +14,5 @@ public interface IGitHubReleasesDownloadOptions
     public string GitHubLegacyFallbackPattern { get; set; }
 
     [Option(SetName = "GitHub Releases", HelpText = $"[{nameof(DownloadSource.GitHub)} Specific] Uses the release tag as the version as opposed to grabbing the version from the release metadata file.", Default = true)]
-    public bool GitHubInheritVersionFromTag { get; set; }
+    public bool? GitHubInheritVersionFromTag { get; set; }
 }

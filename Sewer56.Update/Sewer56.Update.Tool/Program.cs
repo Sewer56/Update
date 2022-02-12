@@ -59,7 +59,7 @@ internal class Program
 
         var commonResolverSettings = new CommonPackageResolverSettings()
         {
-            AllowPrereleases = options.AllowPrereleases,
+            AllowPrereleases = options.AllowPrereleases.GetValueOrDefault(),
             MetadataFileName = options.MetadataFileName
         };
 
@@ -70,12 +70,12 @@ internal class Program
                 UserName = options.GitHubUserName,
                 RepositoryName = options.GitHubRepositoryName,
                 LegacyFallbackPattern = options.GitHubLegacyFallbackPattern,
-                InheritVersionFromTag = options.GitHubInheritVersionFromTag
+                InheritVersionFromTag = options.GitHubInheritVersionFromTag.GetValueOrDefault()
             }, commonResolverSettings),
             DownloadSource.NuGet => new NuGetUpdateResolver(new NuGetUpdateResolverSettings()
             {
                 PackageId = options.NuGetPackageId,
-                AllowUnlisted = options.AllowPrereleases,
+                AllowUnlisted = options.AllowPrereleases.GetValueOrDefault(),
                 NugetRepository = new NugetRepository(options.NuGetFeedUrl),
             }, commonResolverSettings),
             DownloadSource.GameBanana => new GameBananaUpdateResolver(new GameBananaResolverConfiguration()

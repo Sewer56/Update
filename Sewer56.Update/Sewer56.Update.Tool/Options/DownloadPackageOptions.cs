@@ -1,4 +1,5 @@
-﻿using CommandLine;
+﻿using System;
+using CommandLine;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Tool.Options.Groups;
 
@@ -24,18 +25,18 @@ internal class DownloadPackageOptions : IGitHubReleasesDownloadOptions, INuGetDo
     public string MetadataFileName { get; set; }
 
     [Option(Required = false, HelpText = "Set to true to download latest pre-release.", Default = false)]
-    public bool AllowPrereleases { get; set; }
+    public bool? AllowPrereleases { get; set; }
 
     /* GitHub Specific */
     public string GitHubUserName { get; set; }
     public string GitHubRepositoryName { get; set; }
     public string GitHubLegacyFallbackPattern { get; set; }
-    public bool GitHubInheritVersionFromTag { get; set; }
+    public bool? GitHubInheritVersionFromTag { get; set; }
 
     /* NuGet Specific */
     public string NuGetPackageId { get; set; }
     public string NuGetFeedUrl { get; set; }
-    public bool NuGetAllowUnlisted { get; set; }
+    public bool? NuGetAllowUnlisted { get; set; }
 
     /* NuGet Specific */
     public string GameBananaModType { get; set; }
