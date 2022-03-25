@@ -155,7 +155,20 @@ public class PackageMetadata : IJsonSerializable
         {
             var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x));  // Delete if not match 
             var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x)); // Delete if match.
-            HashSet.Cleanup(Hashes, targetDirectory, path => !path.TryMatchAnyRegex(compiledIgnoreRegexes) && path.TryMatchAnyRegex(compiledIncludeRegexes));
+
+            // TODO: Regex for including any other files.
+            HashSet.Cleanup(Hashes, targetDirectory, path => !(path.TryMatchAnyRegex(compiledIgnoreRegexes) && !path.TryMatchAnyRegex(compiledIncludeRegexes)));
+            DeleteEmptyDirs(targetDirectory);
+        }
+
+        static void DeleteEmptyDirs(string dir)
+        {
+            foreach (var subDir in Directory.EnumerateDirectories(dir))
+                DeleteEmptyDirs(subDir);
+
+            var entries = Directory.EnumerateFileSystemEntries(dir);
+            if (!entries.Any())
+                IOEx.TryDeleteDirectory(dir, true);
         }
     }
 
