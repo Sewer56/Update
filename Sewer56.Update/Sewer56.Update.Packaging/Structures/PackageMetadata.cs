@@ -156,7 +156,6 @@ public class PackageMetadata : IJsonSerializable
             var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x));  // Delete if not match 
             var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x)); // Delete if match.
 
-            // TODO: Regex for including any other files.
             HashSet.Cleanup(Hashes, targetDirectory, path => !(path.TryMatchAnyRegex(compiledIgnoreRegexes) && !path.TryMatchAnyRegex(compiledIncludeRegexes)));
             DeleteEmptyDirs(targetDirectory);
         }
