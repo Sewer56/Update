@@ -21,6 +21,11 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// </summary>
     public int Count => _resolverItems.Length;
 
+    /// <summary>
+    /// Executed upon a successful download of a package using a given resolver.
+    /// </summary>
+    public Action<GetResolverResult>? OnSuccessfulDownload;
+
     private AggregatePackageResolverItem[] _resolverItems;
     private bool _hasAcquiredPackages;
     private bool _hasInitialised;
@@ -77,6 +82,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
             try
             {
                 await result.Resolver.DownloadPackageAsync(version, destFilePath, verificationInfo, progress, cancellationToken);
+                OnSuccessfulDownload?.Invoke(result);
                 success = true;
                 break;
             }
