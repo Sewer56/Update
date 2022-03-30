@@ -68,37 +68,78 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var resolver = (await GetResolverForVersionAsync(version, cancellationToken)).Resolver;
-        await resolver.DownloadPackageAsync(version, destFilePath, verificationInfo, progress, cancellationToken);
+        var resolverResults = (await GetResolversForVersionAsync(version, cancellationToken));
+        bool success = false;
+        var exceptions = new List<Exception>();
+
+        foreach (var result in resolverResults)
+        {
+            try
+            {
+                await result.Resolver.DownloadPackageAsync(version, destFilePath, verificationInfo, progress, cancellationToken);
+                success = true;
+                break;
+            }
+            catch (Exception e)
+            {
+                exceptions.Add(e);
+            }
+        }
+
+        if (!success)
+            throw new AggregateException(exceptions);
     }
 
     /// <inheritdoc />
     public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
-        var resolver = (await GetResolverForVersionAsync(version, token)).Resolver;
-        if (resolver is IPackageResolverDownloadSize downloadSizeProvider)
-            return await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
-            
+        var resolverResults = (await GetResolversForVersionAsync(version, token));
+        foreach (var result in resolverResults)
+        {
+            try
+            {
+                if (result.Resolver is IPackageResolverDownloadSize downloadSizeProvider)
+                    return await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
+            }
+            catch (Exception e) { /* Ignored */ }
+        }
+
         return -1;
     }
 
     /// <summary>
-    /// Returns the update resolver that would be used to update to the given version.
+    /// Returns the update resolvers that would be used to update to a given version.
     /// </summary>
     /// <param name="version">The version to be used for updating.</param>
     /// <param name="token">Token used to cancel the operation used to acquire packages (if first use).</param>
     /// <returns>Details of the resolver used for updating.</returns>
+    [Obsolete("Provided for backwards compatibility. Use GetResolversForVersionAsync in newer applications.")]
     public async Task<GetResolverResult> GetResolverForVersionAsync(NuGetVersion version, CancellationToken token)
     {
+        return (await GetResolversForVersionAsync(version, token))[0];
+    }
+
+    /// <summary>
+    /// Returns the available update resolvers that would be used to update to a given version.
+    /// </summary>
+    /// <param name="version">The version to be used for updating.</param>
+    /// <param name="token">Token used to cancel the operation used to acquire packages (if first use).</param>
+    /// <returns>Details of the resolver used for updating.</returns>
+    public async Task<List<GetResolverResult>> GetResolversForVersionAsync(NuGetVersion version, CancellationToken token)
+    {
         await AcquirePackagesIfNecessaryAsync(token);
+        var result = new List<GetResolverResult>();
         for (var x = 0; x < _resolverItems.Length; x++)
         {
             var resolver = _resolverItems[x];
             if (resolver.Versions.Find(x => x.Equals(version)) != default)
-                return new GetResolverResult(resolver.Resolver, x);
+                result.Add(new GetResolverResult(resolver.Resolver, x));
         }
 
-        throw new Exception("Resolver with a specified version was not found.");
+        if (result.Count <= 0)
+            throw new Exception("Resolver with a specified version was not found.");
+
+        return result;
     }
 
     private List<NuGetVersion> FlattenVersions()
