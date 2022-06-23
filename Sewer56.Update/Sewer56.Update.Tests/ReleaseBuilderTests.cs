@@ -135,6 +135,55 @@ public class ReleaseBuilderTests
     }
 
     [Fact]
+    public async Task Build_WithoutVersionSuffix_CountsDeltasInExistingPackages()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+
+        // => Add 1 copy/regular package and a delta existing package.
+        // If ExistingPackageBuilderItems are counted properly, this should not throw.
+        using var existingPackageOne = new TemporaryFolderAllocation();
+        await Package<Empty>.CreateAsync(Assets.ManyFileFolderOriginal, existingPackageOne.FolderPath, "1.0.0");
+
+        builder.AddExistingPackage(new ExistingPackageBuilderItem()
+        {
+            Path = existingPackageOne.FolderPath
+        });
+
+        using var existingDeltaPackageOne = new TemporaryFolderAllocation();
+        await Package<Empty>.CreateDeltaAsync(Assets.ManyFileFolderOriginal, Assets.ManyFileFolderTarget, existingDeltaPackageOne.FolderPath, "1.0.0", "1.0.1");
+
+        builder.AddExistingPackage(new ExistingPackageBuilderItem()
+        {
+            Path = existingDeltaPackageOne.FolderPath
+        });
+
+        // Doesn't throw.
+        await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            DontAppendVersionToPackages = true
+        });
+
+        // Add another copy/regular package
+        using var existingPackageTwo = new TemporaryFolderAllocation();
+        await Package<Empty>.CreateAsync(Assets.ManyFileFolderTarget, existingPackageTwo.FolderPath, "1.0.1");
+        builder.AddExistingPackage(new ExistingPackageBuilderItem()
+        {
+            Path = existingPackageTwo.FolderPath
+        });
+
+        // It should throw now!
+        await Assert.ThrowsAsync<BuilderValidationFailedException>(() => builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "PackageThatThrows",
+            OutputFolder = this.OutputFolder,
+            DontAppendVersionToPackages = true
+        }));
+    }
+
+    [Fact]
     public async Task Build_CanBuildDeltaPackageRelease()
     {
         // Arrange
