@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -98,7 +98,7 @@ internal class Program
             var slicer = new ProgressSlicer(progressBar.AsProgress<double>());
 
             await resolver.DownloadPackageAsync(lastVersion, tempPath, 
-                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(tempPath) }, slicer.Slice(0.8));
+                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(tempPath)! }, slicer.Slice(0.8));
 
             progressBar.Message = "Extracting Package";
             await GetExtractor().ExtractPackageAsync(tempPath, options.OutputPath, slicer.Slice(0.2));
@@ -106,7 +106,7 @@ internal class Program
         else
         {
             await resolver.DownloadPackageAsync(lastVersion, options.OutputPath,
-                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath)) }, progressBar.AsProgress<double>());
+                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progressBar.AsProgress<double>());
         }
     }
 
