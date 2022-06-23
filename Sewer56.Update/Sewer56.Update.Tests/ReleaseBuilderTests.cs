@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Packaging;
+using Sewer56.Update.Packaging.Exceptions;
 using Sewer56.Update.Packaging.Extractors;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Packaging.Structures.ReleaseBuilder;
@@ -49,6 +50,88 @@ public class ReleaseBuilderTests
         {
             Assert.True(File.Exists(Path.Combine(OutputFolder, release.FileName)));
         }
+    }
+
+    [Fact]
+    public async Task Build_WithoutVersionSuffix()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        // Act
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            DontAppendVersionToPackages = true
+        });
+
+        // Assert Packages Exist
+        Assert.True(metadata.Releases.Count > 0);
+        foreach (var release in metadata.Releases)
+        {
+            Assert.True(File.Exists(Path.Combine(OutputFolder, release.FileName)));
+        }
+
+        // Assert No Version in Name
+        Assert.DoesNotContain(metadata.Releases, item => item.FileName.Contains("1.0"));
+    }
+
+    [Fact]
+    public async Task Build_WithoutVersionSuffix_WithMultiCopyPackages_ThrowsBuilderValidationFailedException()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderOriginal,
+            Version = "1.0"
+        });
+
+        builder.AddCopyPackage(new CopyBuilderItem<Empty>()
+        {
+            FolderPath = Assets.ManyFileFolderTarget,
+            Version = "1.0.1"
+        });
+
+        // Act
+        await Assert.ThrowsAsync<BuilderValidationFailedException>(() => builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            DontAppendVersionToPackages = true
+        }));
+    }
+
+    [Fact]
+    public async Task Build_WithoutVersionSuffix_IgnoresDeltaPackages()
+    {
+        // Arrange
+        var builder = new ReleaseBuilder<Empty>();
+        builder.AddDeltaPackage(new DeltaBuilderItem<Empty>()
+        {
+            Version = "1.0.1",
+            FolderPath = Assets.ManyFileFolderTarget,
+
+            PreviousVersion = "1.0",
+            PreviousVersionFolder = Assets.ManyFileFolderOriginal
+        });
+
+        // Act
+        var metadata = await builder.BuildAsync(new BuildArgs()
+        {
+            FileName = "Package",
+            OutputFolder = this.OutputFolder,
+            DontAppendVersionToPackages = true
+        });
+
+        // Assert No Version in Name
+        Assert.Contains(metadata.Releases, item => item.FileName.Contains("1.0.1"));
     }
 
     [Fact]
