@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -89,6 +89,7 @@ internal class Program
         await resolver.InitializeAsync();
         var versions    = await resolver.GetPackageVersionsAsync();
         var lastVersion = versions.Count > 0 ? versions[^1] : null;
+        await Console.Out.WriteLineAsync(lastVersion!.ToString());
 
         if (options.Extract)
         {

@@ -51,6 +51,8 @@ dotnet Sewer56.Update.Tool.dll DownloadPackage --outputpath "Mod.pkg" --source N
 dotnet Sewer56.Update.Tool.dll DownloadPackage --extract --outputpath "Mod.pkg" --source GameBanana --gamebananaitemid 333681
 ```
 
+The will write the version of the last package to standard output, so you could run `dotnet Sewer56.Update.Tool.dll DownloadPackage ... > version.txt` to save it to a file called `version.txt`.
+
 ### Note
 
 This article is a stub. You can help by expanding it with a pull request!  
