@@ -39,6 +39,7 @@ internal static class GitHubClientInstance
     private static HttpMessageHandler GetHandler()
     {
         var cachingHandler = new CachingHandler(new AkavacheContentStore());
+        cachingHandler.UseConditionalPutPatchDelete = true;
         cachingHandler.InnerHandler = new HttpClientHandler();
         return cachingHandler;
     }

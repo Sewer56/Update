@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reactive;
@@ -15,7 +16,7 @@ namespace Sewer56.Update.Resolvers.GitHub;
 
 internal class AkavacheContentStore : ICacheStore
 {
-    private static readonly TimeSpan _expiration = TimeSpan.FromDays(30);
+    private static readonly TimeSpan MinExpiration = TimeSpan.FromDays(14);
 
     static AkavacheContentStore()
     {
@@ -53,13 +54,33 @@ internal class AkavacheContentStore : ICacheStore
         await using var memoryStream = new MemoryStream();
         await _messageSerializer.SerializeAsync(response, memoryStream).ConfigureAwait(false);
         response.RequestMessage = req;
-        await Cache.Insert(key.ToString(), memoryStream.ToArray(), _expiration);
+
+        // Calculate expiry
+        var minExpiry       = DateTimeOffset.UtcNow.Add(MinExpiration);
+        var suggestedExpiry = response.GetExpiry() ?? minExpiry;
+        var optimalExpiry   = (suggestedExpiry > minExpiry) ? suggestedExpiry : minExpiry;
+        await Cache.Insert(key.ToString(), memoryStream.ToArray(), optimalExpiry);
     }
 
     public async Task<bool> TryRemoveAsync(CacheKey key)
     {
-        await Cache.Invalidate(key.ToString());
-        return true;
+        try
+        {
+            var result = true;
+            var observable = Cache.Invalidate(key.ToString());
+            observable.Subscribe(unit => { }, exception =>
+            {
+                if (exception is KeyNotFoundException)
+                    result = false;
+            }, () => { });
+
+            await observable;
+            return result;
+        }
+        catch (KeyNotFoundException e)
+        {
+            return false;
+        }
     }
 
     public async Task ClearAsync() => await Cache.InvalidateAll();
