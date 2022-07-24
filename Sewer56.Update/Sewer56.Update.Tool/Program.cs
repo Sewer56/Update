@@ -25,6 +25,7 @@ using Sewer56.Update.Structures;
 using Sewer56.Update.Tool.Options;
 using Sewer56.Update.Tool.Options.Groups;
 using Sewer56.Update.Tool.Validation;
+using ShellProgressBar;
 using IPackageResolver = Sewer56.Update.Interfaces.IPackageResolver;
 
 namespace Sewer56.Update.Tool;
@@ -53,11 +54,43 @@ internal class Program
 
     private static async Task DownloadPackage(DownloadPackageOptions options)
     {
-        using var progressBar = new ShellProgressBar.ProgressBar(10000, "Downloading Package");
+        using var progressBar = new ProgressBar(10000, "Downloading Package");
+        await DownloadPackageInternal(options, progressBar.AsProgress<double>(), message => progressBar.Message = message, true);
+    }
+
+    private static async Task CreateCopyPackage(CreateCopyPackageOptions options)
+    {
+        var validator = new CreateCopyPackageOptionsValidator();
+        validator.ValidateAndThrow(options);
+
+        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
+        var includeRegexes = string.IsNullOrEmpty(options.IncludeRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IncludeRegexesPath)).ToList();
+        await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes, includeRegexes);
+    }
+
+    private static async Task CreateDeltaPackage(CreateDeltaPackageOptions options)
+    {
+        using var progressBar = new ProgressBar(10000, "Downloading Package");
+        await CreateDeltaPackageInternal(options, progressBar.AsProgress<double>(), message => progressBar.Message = message);
+    }
+
+
+    /// <summary>
+    /// Creates a new package.
+    /// </summary>
+    private static async Task CreateRelease(CreateReleaseOptions releaseOptions)
+    {
+        // Act
+        using var progressBar = new ProgressBar(10000, "Building Release");
+        await CreateReleaseInternal(releaseOptions, progressBar.AsProgress<double>());
+    }
+
+    private static async Task<string> DownloadPackageInternal(DownloadPackageOptions options, IProgress<double> progress, ReportProgressMessage reportMessage = null, bool writeVersionToStdout = false)
+    {
         var validator = new DownloadPackageOptionsValidator();
         validator.ValidateAndThrow(options);
 
-        Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath)!);
         var commonResolverSettings = new CommonPackageResolverSettings()
         {
             AllowPrereleases = options.AllowPrereleases.GetValueOrDefault(),
@@ -87,55 +120,59 @@ internal class Program
             _ => throw new ArgumentOutOfRangeException()
         };
 
+        reportMessage?.Invoke("Downloading Package");
         await resolver.InitializeAsync();
-        var versions    = await resolver.GetPackageVersionsAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
         var lastVersion = versions.Count > 0 ? versions[^(options.ReleaseIndex + 1)] : null;
-        await Console.Out.WriteLineAsync(lastVersion!.ToString());
+        var versionString = lastVersion!.ToString();
+        if (writeVersionToStdout)
+            await Console.Out.WriteLineAsync(versionString);
 
         if (options.Extract)
         {
             // Download to temp folder and extract.
             using var tempFolder = new TemporaryFolderAllocation();
             var tempPath = Path.Combine(tempFolder.FolderPath, $"{Path.GetRandomFileName()}.pkg");
-            var slicer = new ProgressSlicer(progressBar.AsProgress<double>());
+            var slicer = new ProgressSlicer(progress);
 
-            await resolver.DownloadPackageAsync(lastVersion, tempPath, 
+            await resolver.DownloadPackageAsync(lastVersion, tempPath,
                 new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(tempPath)! }, slicer.Slice(0.8));
 
-            progressBar.Message = "Extracting Package";
+            reportMessage?.Invoke("Extracting Package");
             await GetExtractor().ExtractPackageAsync(tempPath, options.OutputPath, slicer.Slice(0.2));
         }
         else
         {
             await resolver.DownloadPackageAsync(lastVersion, options.OutputPath,
-                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progressBar.AsProgress<double>());
+                new ReleaseMetadataVerificationInfo()
+                    { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progress);
         }
+
+        return versionString;
     }
 
-    private static async Task CreateDeltaPackage(CreateDeltaPackageOptions options)
+
+
+    private static async Task CreateDeltaPackageInternal(CreateDeltaPackageOptions options, IProgress<double> progress, ReportProgressMessage reportProgressMessage = null)
     {
         var validator = new CreateDeltaPackageValidator();
         validator.ValidateAndThrow(options);
 
         var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
         var includeRegexes = string.IsNullOrEmpty(options.IncludeRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IncludeRegexesPath)).ToList();
-        await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath, options.LastVersion, options.Version, null, ignoreRegexes, null, includeRegexes);
-    }
-
-    private static async Task CreateCopyPackage(CreateCopyPackageOptions options)
-    {
-        var validator = new CreateCopyPackageOptionsValidator();
-        validator.ValidateAndThrow(options);
-
-        var ignoreRegexes = string.IsNullOrEmpty(options.IgnoreRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IgnoreRegexesPath)).ToList();
-        var includeRegexes = string.IsNullOrEmpty(options.IncludeRegexesPath) ? null : (await File.ReadAllLinesAsync(options.IncludeRegexesPath)).ToList();
-        await Package<Empty>.CreateAsync(options.FolderPath, options.OutputPath, options.Version, null, ignoreRegexes, includeRegexes);
+        await Package<Empty>.CreateDeltaAsync(options.LastVersionFolderPath, options.FolderPath, options.OutputPath,
+            options.LastVersion, options.Version, null, ignoreRegexes,
+            (text, d) =>
+            {
+                progress.Report(d);
+                reportProgressMessage?.Invoke(text);
+            }, includeRegexes);
     }
 
     /// <summary>
     /// Creates a new package.
     /// </summary>
-    private static async Task CreateRelease(CreateReleaseOptions releaseOptions)
+    private static async Task CreateReleaseInternal(CreateReleaseOptions releaseOptions, IProgress<double> progress)
     {
         // Validate and set defaults.
         var validator = new CreateReleaseOptionsValidator();
@@ -158,8 +195,6 @@ internal class Program
         }
 
         // Act
-        using var progressBar = new ShellProgressBar.ProgressBar(10000, "Building Release");
-
         await builder.BuildAsync(new BuildArgs()
         {
             FileName = releaseOptions.PackageName,
@@ -169,7 +204,7 @@ internal class Program
             AutoGenerateDelta = releaseOptions.AutoGenerateDelta,
             DontAppendVersionToPackages = releaseOptions.DontAppendVersionToPackages,
             PackageExtractor = GetExtractor()
-        }, progressBar.AsProgress<double>());
+        }, progress);
     }
 
     private static IPackageExtractor GetExtractor()
@@ -216,4 +251,6 @@ internal class Program
 
         Console.WriteLine(helpText);
     }
+
+    private delegate void ReportProgressMessage(string message);
 }
