@@ -202,4 +202,17 @@ public class PackagingTests
         var valid = metadata.Verify(out var missingFiles, out var mismatchFiles, ResultFolder);
         Assert.True(valid);
     }
+
+    [Fact]
+    public async Task DeltaPackage_HandlesMultipleFilesWithSameHash()
+    {
+        // Act
+        await Package<Empty>.CreateDeltaAsync(Assets.DuplicateHashesOriginal, Assets.DuplicateHashesTarget, PackageFolder, "1.0", "1.0.1");
+        var metadata = await Package<Empty>.ReadMetadataFromDirectoryAsync(PackageFolder);
+        metadata.Apply(ResultFolder, null, Assets.DuplicateHashesOriginal);
+
+        // Assert
+        var valid = metadata.Verify(out var missingFiles, out var mismatchFiles, ResultFolder);
+        Assert.True(valid);
+    }
 }

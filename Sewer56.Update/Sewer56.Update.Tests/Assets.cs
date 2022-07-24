@@ -31,6 +31,10 @@ public static class Assets
     public static readonly string NuGetLegacyPackage = Path.Combine(NuGetLegacyPackageTestsFolder, "Package1.0Legacy.nupkg");
     public static readonly string NuGetLegacyPackageOriginalFiles = ManyFileFolderOriginal;
 
+    public static readonly string DuplicateHashesFolder = Path.Combine(AssetsFolder, "Duplicate Hash Test");
+    public static readonly string DuplicateHashesOriginal = Path.Combine(DuplicateHashesFolder, "Original");
+    public static readonly string DuplicateHashesTarget = Path.Combine(DuplicateHashesFolder, "Target");
+
     public static readonly string TempFolder = Path.Combine(Paths.ProgramFolder, "Temp");
 
     static Assets()
