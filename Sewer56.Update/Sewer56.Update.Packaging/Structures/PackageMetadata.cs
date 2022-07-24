@@ -187,6 +187,8 @@ public class PackageMetadata : IJsonSerializable
         {
             DeltaData.PatchData.Directory = sourceDirectory;
             Patch.Apply(DeltaData.PatchData, deltaSourceDirectory, targetDirectory);
+            if (!HashSet.Verify(Hashes, targetDirectory, out var missingFiles, out var mismatchFiles))
+                DeltaPatchGenerator.Lib.Utility.ThrowHelpers.ThrowVerificationFailed("Files after Delta Patching do not Match Expected Files\n", missingFiles, mismatchFiles);
         }
         finally
         {
