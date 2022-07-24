@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Prevent warnings from unused code in dependencies -->
+    <TrimmerDefaultAction>link</TrimmerDefaultAction>
+    
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Analyze the whole library, even if attributed with "IsTrimmable" -->
+    <TrimmerRootAssembly Include="Sewer56.Update" />
+    <TrimmerRootAssembly Include="Sewer56.Update.Misc" />
+    <TrimmerRootAssembly Include="Sewer56.Update.Packaging" />
+    <TrimmerRootAssembly Include="Sewer56.Update.Extractors.SevenZipSharp" />
+    <TrimmerRootAssembly Include="Sewer56.Update.Resolvers.GameBanana" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\..\Extractors\Sewer56.Update.Extractors.SevenZipSharp\Sewer56.Update.Extractors.SevenZipSharp.csproj" />
+    <ProjectReference Include="..\..\Extractors\Sewer56.Update.Extractors.SharpCompress\Sewer56.Update.Extractors.SharpCompress.csproj" />
+    <ProjectReference Include="..\..\Resolvers\Sewer56.Update.Resolvers.GameBanana\Sewer56.Update.Resolvers.GameBanana.csproj" />
+    <ProjectReference Include="..\..\Resolvers\Sewer56.Update.Resolvers.GitHub\Sewer56.Update.Resolvers.GitHub.csproj" />
+    <ProjectReference Include="..\..\Resolvers\Sewer56.Update.Resolvers.NuGet\Sewer56.Update.Resolvers.NuGet.csproj" />
+    <ProjectReference Include="..\..\Sewer56.Update.Misc\Sewer56.Update.Misc.csproj" />
+    <ProjectReference Include="..\..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
+    <ProjectReference Include="..\..\Sewer56.Update\Sewer56.Update.csproj" />
+  </ItemGroup>
+
+</Project>

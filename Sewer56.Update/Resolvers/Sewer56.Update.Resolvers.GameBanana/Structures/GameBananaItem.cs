@@ -1,8 +1,13 @@
 ﻿using System.Collections.Generic;
+
 using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 #pragma warning disable CS1591
 
 namespace Sewer56.Update.Resolvers.GameBanana.Structures;
@@ -27,6 +32,9 @@ public class GameBananaItem
     [JsonPropertyName("Files().aFiles()")]
     public Dictionary<string, GameBananaItemFile>? Files { get; set; }
 
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved by module initializer.")]
+#endif
     public static async Task<GameBananaItem?> FromTypeAndIdAsync(string itemType, long itemId)
     {
         try

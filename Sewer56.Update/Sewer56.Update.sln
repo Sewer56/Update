@@ -25,7 +25,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Resolvers.Ga
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Resolvers.NuGet", "Resolvers\Sewer56.Update.Resolvers.NuGet\Sewer56.Update.Resolvers.NuGet.csproj", "{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sewer56.Update.Extractors.SevenZipSharp", "Extractors\Sewer56.Update.Extractors.SevenZipSharp\Sewer56.Update.Extractors.SevenZipSharp.csproj", "{64E24803-98A4-46FC-97E0-3E29B1C92AE2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sewer56.Update.Extractors.SevenZipSharp", "Extractors\Sewer56.Update.Extractors.SevenZipSharp\Sewer56.Update.Extractors.SevenZipSharp.csproj", "{64E24803-98A4-46FC-97E0-3E29B1C92AE2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Trimming", "Trimming", "{1CB2112F-699D-4D77-A2BB-97F80F61F6C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trimming.Dummy", "Trimming\Trimming.Dummy\Trimming.Dummy.csproj", "{D80683B9-3B51-43A9-A4AA-39E394C949DE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,6 +81,10 @@ Global
 		{64E24803-98A4-46FC-97E0-3E29B1C92AE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64E24803-98A4-46FC-97E0-3E29B1C92AE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64E24803-98A4-46FC-97E0-3E29B1C92AE2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D80683B9-3B51-43A9-A4AA-39E394C949DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D80683B9-3B51-43A9-A4AA-39E394C949DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D80683B9-3B51-43A9-A4AA-39E394C949DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D80683B9-3B51-43A9-A4AA-39E394C949DE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +95,7 @@ Global
 		{2F45BF2A-C340-4341-A691-6CCB61189C0B} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 		{9BF144F9-89EC-4E55-A47F-6C2A9C4FAF8F} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
 		{64E24803-98A4-46FC-97E0-3E29B1C92AE2} = {B775AF40-AD9D-4A16-9D8F-033795B3B22C}
+		{D80683B9-3B51-43A9-A4AA-39E394C949DE} = {1CB2112F-699D-4D77-A2BB-97F80F61F6C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61C6447A-EA3D-4933-80BC-38F3D6ED8FBA}

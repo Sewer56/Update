@@ -107,7 +107,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
                 if (result.Resolver is IPackageResolverDownloadSize downloadSizeProvider)
                     return await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
             }
-            catch (Exception e) { /* Ignored */ }
+            catch (Exception) { /* Ignored */ }
         }
 
         return -1;

@@ -9,6 +9,10 @@ using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Structures;
 
+#if NET5_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+
 namespace Sewer56.Update.Hooks;
 
 /// <summary />
@@ -21,6 +25,9 @@ public static class Startup
     /// A handler for command line arguments passed to the program.
     /// </summary>
     /// <returns>True if the process should exit, else false.</returns>
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved in Module Initializer")]
+#endif
     public static bool HandleCommandLineArgs(string[] args, bool printToConsoleOnError = true)
     {
         StartupParams? startupParams = null;
@@ -68,6 +75,9 @@ public static class Startup
     /// <param name="baseDirectory">Base directory for the current program.</param>
     /// <param name="targetDirectory">Folder containing the new version of the program.</param>
     /// <param name="arguments">Arguments to pass to the application.</param>
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved in Module Initializer")]
+#endif
     internal static ProcessStartInfo GetProcessStartInfo(string executablePath, string baseDirectory, string targetDirectory, StartupParams arguments)
     {
         var relativePath         = Paths.GetRelativePath(executablePath, baseDirectory);

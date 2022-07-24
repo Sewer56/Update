@@ -15,7 +15,8 @@ Separated out to avoid unnecessary dependency creep when only certain library wo
     <PackageTags>misc</PackageTags>
     <PackageLicenseExpression> LGPL-3.0-or-later</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
+    <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
   <ItemGroup>

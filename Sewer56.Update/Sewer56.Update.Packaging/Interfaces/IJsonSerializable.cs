@@ -1,13 +1,12 @@
-﻿using System;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.IO.Compression;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.IO;
-using Sewer56.Update.Packaging.Structures;
+#if NET5_0_OR_GREATER
+using static System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;
+#endif
 
 namespace Sewer56.Update.Packaging.Interfaces;
 
@@ -38,7 +37,14 @@ public static class JsonSerializableExtensions
     /// <param name="serializable">The serializable item.</param>
     /// <param name="filePath">Path to the file to write.</param>
     /// <param name="compressionMode">The compression mode to use for the file write operation.</param>
-    public static async Task ToJsonAsync<T>(this T serializable, string filePath, JsonCompression compressionMode) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved All.")]
+#endif
+    public static async Task ToJsonAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(this T serializable, string filePath, JsonCompression compressionMode) where T : IJsonSerializable, new()
     {
         await using var fileStream = File.Open(filePath, FileMode.Create);
         await using var compressionStream = JsonCompressionExtensions.GetStreamForCompression(fileStream, compressionMode);
@@ -52,7 +58,14 @@ public static class JsonSerializableExtensions
     /// <param name="directory">The directory to read item from.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T> ReadFromDirectoryOrDefaultAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Caused by compiler generated code already covered by our annotations.")]
+#endif
+    public static async Task<T> ReadFromDirectoryOrDefaultAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : IJsonSerializable, new()
     {
         if (CanReadFromDirectory(serializable, directory, fileName, out var compressionMode, out var fullFilePath))
             return await ReadFromDirectoryAsync_Internal<T>(fullFilePath, token, compressionMode);
@@ -67,7 +80,14 @@ public static class JsonSerializableExtensions
     /// <param name="directory">The directory to read item from.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="token">Allows for cancelling the task.</param>
-    public static async Task<T?> ReadFromDirectoryOrNullAsync<T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : class, IJsonSerializable, new() 
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Caused by compiler generated code already covered by our annotations.")]
+#endif
+    public static async Task<T?> ReadFromDirectoryOrNullAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(this T serializable, string directory, string? fileName = null, CancellationToken token = default) where T : class, IJsonSerializable, new() 
     {
         if (CanReadFromDirectory(serializable, directory, fileName, out var compressionMode, out var fullFilePath))
             return await ReadFromDirectoryAsync_Internal<T>(fullFilePath, token, compressionMode);
@@ -81,11 +101,18 @@ public static class JsonSerializableExtensions
     /// <param name="fullFilePath">Full file path to the file.</param>
     /// <param name="token">Allows for cancelling the task.</param>
     /// <param name="compressionMode">The compression mode to use for the file to be read.</param>
-    internal static async Task<T> ReadFromDirectoryAsync_Internal<T>(string fullFilePath, CancellationToken token = default, JsonCompression compressionMode = JsonCompression.Brotli) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved All.")]
+#endif
+    internal static async Task<T> ReadFromDirectoryAsync_Internal<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(string fullFilePath, CancellationToken token = default, JsonCompression compressionMode = JsonCompression.Brotli) where T : IJsonSerializable, new()
     {
         await using var fileStream = File.Open(fullFilePath, FileMode.Open);
         await using var decompressionStream = JsonCompressionExtensions.GetStreamForDecompression(fileStream, compressionMode);
-        var metadata = await JsonSerializer.DeserializeAsync<T>(decompressionStream, null, token);
+        var metadata = await JsonSerializer.DeserializeAsync<T>(decompressionStream, (JsonSerializerOptions?)null, token);
         metadata!.AfterDeserialize(metadata, fullFilePath);
         return metadata;
     }
@@ -96,7 +123,14 @@ public static class JsonSerializableExtensions
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="stream">The stream containing the json to deserialize</param>
     /// <param name="compressionMode">The compression mode for the file to read.</param>
-    public static async Task<T> ReadFromStreamAsync<T>(this T serializable, Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Caused by compiler generated code already covered by our annotations.")]
+#endif
+    public static async Task<T> ReadFromStreamAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(this T serializable, Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
         return await ReadFromStreamAsync<T>(stream, compressionMode);
     }
@@ -106,7 +140,14 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="stream">The stream containing the json to deserialize</param>
     /// <param name="compressionMode">The compression mode for the file to read.</param>
-    public static async Task<T> ReadFromStreamAsync<T>(Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved All.")]
+#endif
+    public static async Task<T> ReadFromStreamAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(Stream stream, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
         await using var decompressStream = JsonCompressionExtensions.GetStreamForDecompression(stream, compressionMode);
         var metadata = await JsonSerializer.DeserializeAsync<T>(decompressStream);
@@ -120,7 +161,14 @@ public static class JsonSerializableExtensions
     /// <param name="serializable">The "this" instance.</param>
     /// <param name="data">The data containing the file to deserialize</param>
     /// <param name="compressionMode">The compression mode for the file to read.</param>
-    public static async Task<T> ReadFromDataAsync<T>(this T serializable, byte[] data, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Caused by compiler generated code already covered by our annotations.")]
+#endif
+    public static async Task<T> ReadFromDataAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(this T serializable, byte[] data, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
         return await ReadFromDataAsync<T>(data, compressionMode);
     }
@@ -130,7 +178,14 @@ public static class JsonSerializableExtensions
     /// </summary>
     /// <param name="data">The data containing the file to deserialize</param>
     /// <param name="compressionMode">The compression mode for the file to read.</param>
-    public static async Task<T> ReadFromDataAsync<T>(byte[] data, JsonCompression compressionMode) where T : IJsonSerializable, new()
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved All.")]
+#endif
+    public static async Task<T> ReadFromDataAsync<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>(byte[] data, JsonCompression compressionMode) where T : IJsonSerializable, new()
     {
         await using var memoryStream      = new MemoryStream(data);
         await using var decompressStream  = JsonCompressionExtensions.GetStreamForDecompression(memoryStream, compressionMode);
@@ -147,6 +202,9 @@ public static class JsonSerializableExtensions
     /// <param name="folderPath">Path to the file to write Json file in.</param>
     /// <param name="fileName">Optional custom file name for the item (if not using default).</param>
     /// <param name="compressionMode">The compression mode to use for the files.</param>
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2091", Justification = "Caused by compiler generated code already covered by our annotations.")]
+#endif
     public static async Task ToDirectoryAsync<T>(this T serializable, string folderPath, string? fileName = null, JsonCompression compressionMode = JsonCompression.None) where T : IJsonSerializable, new()
     {
         var fName = Path.Combine(folderPath, fileName ?? serializable.GetDefaultFileName());

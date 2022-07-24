@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,6 +10,9 @@ using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Enums;
 using Sewer56.Update.Packaging.Exceptions;
 using Sewer56.Update.Packaging.Interfaces;
+#if NET5_0_OR_GREATER
+using static System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes;
+#endif
 
 namespace Sewer56.Update.Packaging.Structures;
 
@@ -62,7 +66,14 @@ public class ReleaseMetadata : IJsonSerializable
     /// </summary>
     /// <typeparam name="T">Any type T containing extra data.</typeparam>
     /// <returns>Extra data casted to desired return type.</returns>
-    public T? GetExtraData<T>() where T : class
+#if NET5_0_OR_GREATER
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Preserved All.")]
+#endif
+    public T? GetExtraData<
+#if NET5_0_OR_GREATER
+        [DynamicallyAccessedMembers(All)]
+#endif
+    T>() where T : class
     {
         if (ExtraData is JsonElement element)
             return JsonSerializer.Deserialize<T>(element.GetRawText());
