@@ -57,6 +57,7 @@ internal class Program
         var validator = new DownloadPackageOptionsValidator();
         validator.ValidateAndThrow(options);
 
+        Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath));
         var commonResolverSettings = new CommonPackageResolverSettings()
         {
             AllowPrereleases = options.AllowPrereleases.GetValueOrDefault(),
@@ -88,7 +89,7 @@ internal class Program
 
         await resolver.InitializeAsync();
         var versions    = await resolver.GetPackageVersionsAsync();
-        var lastVersion = versions.Count > 0 ? versions[^1] : null;
+        var lastVersion = versions.Count > 0 ? versions[^(options.ReleaseIndex + 1)] : null;
         await Console.Out.WriteLineAsync(lastVersion!.ToString());
 
         if (options.Extract)

@@ -27,6 +27,9 @@ internal class DownloadPackageOptions : IGitHubReleasesDownloadOptions, INuGetDo
     [Option(Required = false, HelpText = "Set to true to download latest pre-release.", Default = false)]
     public bool? AllowPrereleases { get; set; }
 
+    [Option(Required = false, HelpText = "A value of 0 downloads current release. A value of 1 downloads previous release.", Default = 0)]
+    public int ReleaseIndex { get; set; }
+
     /* GitHub Specific */
     public string GitHubUserName { get; set; }
     public string GitHubRepositoryName { get; set; }
