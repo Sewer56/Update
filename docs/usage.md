@@ -60,4 +60,4 @@ if (result.CanUpdate)
 
 ## Appendix
 
-If you are curious about the purpose of `Empty` generic item, refer to [Extra Package Metadata](./package-custom-metadata.md).
+If you are curious about the purpose of `Empty` generic item, refer to [Extra Package Metadata](./extensibility/package-custom-metadata.md).
