@@ -8,9 +8,9 @@ internal class CreateCopyPackageOptionsBase : ICreateCopyPackageOptionsBase
 
     public string Version { get; set; }
 
-    public string OutputPath { get; internal set; }
+    public string OutputPath { get; set; }
 
-    public string IgnoreRegexesPath { get; internal set; }
+    public string IgnoreRegexesPath { get; set; }
 
-    public string IncludeRegexesPath { get; internal set; }
+    public string IncludeRegexesPath { get; set; }
 }

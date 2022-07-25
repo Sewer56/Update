@@ -15,8 +15,8 @@ internal class AutoCreateDeltaOptions : IPackageResolverOptions, ICurrentPackage
     /* ICurrentPackageDetails */
     public string FolderPath { get; set; }
     public string Version { get; set; }
-    public string IgnoreRegexesPath { get; }
-    public string IncludeRegexesPath { get; }
+    public string IgnoreRegexesPath { get; set; }
+    public string IncludeRegexesPath { get; set; }
 
     /* IPackageResolverOptions: Options */
     public DownloadSource Source { get; set; }
