@@ -30,9 +30,17 @@ Expand-Archive -LiteralPath './Sewer56.Update.Tool.zip' -DestinationPath "Update
 dotnet ./Update-Tools/Sewer56.Update.Tool.dll /* Arguments */
 ```
 
+## Useful Use Cases
+
+!!! warning
+
+    Certain tool options return data to standard output (stdout).  
+    Please specify the `--noprogressbar` parameter if you wish to use those.  
+
 ## Downloading Previous Packages
 
-It is possible to download existing packages by using the update tool; this is useful for creating delta updates in a CI/CD environment.
+It is possible to download existing packages by using the update tool.  
+This may be useful in some more advanced use cases.  
 
 Here are some examples:  
 
@@ -51,9 +59,29 @@ dotnet Sewer56.Update.Tool.dll DownloadPackage --outputpath "Mod.pkg" --source N
 dotnet Sewer56.Update.Tool.dll DownloadPackage --extract --outputpath "Mod.pkg" --source GameBanana --gamebananaitemid 333681
 ```
 
-The will write the version of the last package to standard output, so you could run `dotnet Sewer56.Update.Tool.dll DownloadPackage ... > version.txt` to save it to a file called `version.txt`.
+The version of the downloaded package is returned to standard output. So you could write the version of the downloaded package to a file using `dotnet Sewer56.Update.Tool.dll DownloadPackage --noprogressbar ... > version.txt` to save it to a file called `version.txt`.
 
-### Note
+## Auto Creating Delta Packages
+
+You can automatically download older versions of a package and create delta packages by using the `AutoCreateDelta` option.
+
+```pwsh
+dotnet Sewer56.Update.Tool.dll AutoCreateDelta `
+--outputpath "DeltaPackages" `           # Where to save generated packages.
+--folderpath "current-version-package" ` # Where package for current version (made with `CreateCopyPackage`) is stored.
+--version "1.0.0" `                      # Current version's version number.
+--source "GitHub" `                      # Where to get previous version from.
+--githubusername "Reloaded-Project" `    
+--githubrepositoryname "Reloaded-II" `
+--githublegacyfallbackpattern "Release.zip" `
+--numreleases 5 ` # Number of releases to create delta packages for.
+--noprogressbar ` # Required for safe piping to packages.txt
+>> packages.txt
+```
+
+This will generate delta updates and append their location to `packages.txt`, which can then be passed to `--existingpackagespath` parameter of `CreateRelease` command.
+
+## Note
 
 This article is a stub. You can help by expanding it with a pull request!  
 I'm in *docs/ci-cd.md*!.
