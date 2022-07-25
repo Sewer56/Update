@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Sewer56.Update.Packaging\Sewer56.Update.Packaging.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Options\Groups\" />
-  </ItemGroup>
-
 </Project>

@@ -1,18 +1,19 @@
 ﻿using System.IO;
 using FluentValidation;
 using Sewer56.Update.Tool.Options;
+using Sewer56.Update.Tool.Options.Groups;
 
 namespace Sewer56.Update.Tool.Validation;
 
-internal class DownloadPackageOptionsValidator : AbstractValidator<DownloadPackageOptions>
+internal class PackageResolverOptionsValidator : AbstractValidator<IPackageResolverOptions>
 {
-    public DownloadPackageOptionsValidator()
+    public PackageResolverOptionsValidator()
     {
         RuleFor(x => x.Source).IsInEnum().WithMessage("Specified download source must be valid.");
         RuleFor(x => x).Custom(ContainTheNecessaryFields);
     }
 
-    private void ContainTheNecessaryFields(DownloadPackageOptions options, ValidationContext<DownloadPackageOptions> context)
+    private void ContainTheNecessaryFields(IPackageResolverOptions options, ValidationContext<IPackageResolverOptions> context)
     {
         switch (options.Source)
         {

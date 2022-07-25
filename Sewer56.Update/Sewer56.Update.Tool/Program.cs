@@ -8,6 +8,7 @@ using CommandLine;
 using CommandLine.Text;
 using FluentValidation;
 using NuGet.Packaging;
+using NuGet.Versioning;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Extractors.SevenZipSharp;
 using Sewer56.Update.Extractors.SharpCompress;
@@ -87,10 +88,42 @@ internal class Program
 
     private static async Task<string> DownloadPackageInternal(DownloadPackageOptions options, IProgress<double> progress, ReportProgressMessage reportMessage = null, bool writeVersionToStdout = false)
     {
-        var validator = new DownloadPackageOptionsValidator();
+        var validator = new PackageResolverOptionsValidator();
         validator.ValidateAndThrow(options);
 
         Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath)!);
+        var resolver = await SetupResolverAsync(options, reportMessage);
+        var versions = await resolver.GetPackageVersionsAsync();;
+        var lastVersion = versions.Count > 0 ? versions[^(options.ReleaseIndex + 1)] : null;
+        var versionString = lastVersion!.ToString();
+        if (writeVersionToStdout)
+            await Console.Out.WriteLineAsync(versionString);
+
+        if (options.Extract)
+        {
+            // Download to temp folder and extract.
+            using var tempFolder = new TemporaryFolderAllocation();
+            var tempPath = Path.Combine(tempFolder.FolderPath, $"{Path.GetRandomFileName()}.pkg");
+            var slicer = new ProgressSlicer(progress);
+
+            await resolver.DownloadPackageAsync(lastVersion, tempPath,
+                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(tempPath)! }, slicer.Slice(0.8));
+
+            reportMessage?.Invoke("Extracting Package");
+            await GetExtractor().ExtractPackageAsync(tempPath, options.OutputPath, slicer.Slice(0.2));
+        }
+        else
+        {
+            await resolver.DownloadPackageAsync(lastVersion, options.OutputPath,
+                new ReleaseMetadataVerificationInfo()
+                    { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progress);
+        }
+
+        return versionString;
+    }
+
+    private static async Task<IPackageResolver> SetupResolverAsync(IPackageResolverOptions options, ReportProgressMessage reportMessage)
+    {
         var commonResolverSettings = new CommonPackageResolverSettings()
         {
             AllowPrereleases = options.AllowPrereleases.GetValueOrDefault(),
@@ -122,35 +155,8 @@ internal class Program
 
         reportMessage?.Invoke("Downloading Package");
         await resolver.InitializeAsync();
-        var versions = await resolver.GetPackageVersionsAsync();
-        var lastVersion = versions.Count > 0 ? versions[^(options.ReleaseIndex + 1)] : null;
-        var versionString = lastVersion!.ToString();
-        if (writeVersionToStdout)
-            await Console.Out.WriteLineAsync(versionString);
-
-        if (options.Extract)
-        {
-            // Download to temp folder and extract.
-            using var tempFolder = new TemporaryFolderAllocation();
-            var tempPath = Path.Combine(tempFolder.FolderPath, $"{Path.GetRandomFileName()}.pkg");
-            var slicer = new ProgressSlicer(progress);
-
-            await resolver.DownloadPackageAsync(lastVersion, tempPath,
-                new ReleaseMetadataVerificationInfo() { FolderPath = Path.GetDirectoryName(tempPath)! }, slicer.Slice(0.8));
-
-            reportMessage?.Invoke("Extracting Package");
-            await GetExtractor().ExtractPackageAsync(tempPath, options.OutputPath, slicer.Slice(0.2));
-        }
-        else
-        {
-            await resolver.DownloadPackageAsync(lastVersion, options.OutputPath,
-                new ReleaseMetadataVerificationInfo()
-                    { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progress);
-        }
-
-        return versionString;
+        return resolver;
     }
-
 
 
     private static async Task CreateDeltaPackageInternal(CreateDeltaPackageOptions options, IProgress<double> progress, ReportProgressMessage reportProgressMessage = null)
@@ -177,7 +183,7 @@ internal class Program
         // Validate and set defaults.
         var validator = new CreateReleaseOptionsValidator();
         validator.ValidateAndThrow(releaseOptions);
-        if (releaseOptions.MaxParallelism == CreateReleaseOptions.DefaultInt)
+        if (releaseOptions.MaxParallelism == ICreateReleaseOptions.DefaultInt)
             releaseOptions.MaxParallelism = Environment.ProcessorCount;
 
         // Get in there!

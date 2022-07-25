@@ -2,10 +2,11 @@
 using System.Linq;
 using FluentValidation;
 using Sewer56.Update.Tool.Options;
+using Sewer56.Update.Tool.Options.Groups;
 
 namespace Sewer56.Update.Tool.Validation;
 
-internal class CreateReleaseOptionsValidator : AbstractValidator<CreateReleaseOptions>
+internal class CreateReleaseOptionsValidator : AbstractValidator<ICreateReleaseOptions>
 {
     public CreateReleaseOptionsValidator()
     {
@@ -14,7 +15,7 @@ internal class CreateReleaseOptionsValidator : AbstractValidator<CreateReleaseOp
         RuleFor(x => x).Custom(BeACorrectNuGetItem);
     }
 
-    private void BeACorrectNuGetItem(CreateReleaseOptions options, ValidationContext<CreateReleaseOptions> context)
+    private void BeACorrectNuGetItem(ICreateReleaseOptions options, ValidationContext<ICreateReleaseOptions> context)
     {
         var archiver = options.Archiver;
         if (archiver != Archiver.NuGet)
