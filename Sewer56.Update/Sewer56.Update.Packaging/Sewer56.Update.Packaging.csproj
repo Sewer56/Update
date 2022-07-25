@@ -18,7 +18,7 @@ Contains the necessary component for creating packages and releases.</Descriptio
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <PackageTags>update;netcore;dotnet;packaging</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>2.3.3</Version>
+    <Version>2.3.4</Version>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
