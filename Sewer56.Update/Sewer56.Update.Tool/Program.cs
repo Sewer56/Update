@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -7,7 +8,9 @@ using System.Threading.Tasks;
 using CommandLine;
 using CommandLine.Text;
 using FluentValidation;
+using Mapster;
 using NuGet.Packaging;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 using Sewer56.DeltaPatchGenerator.Lib.Utility;
 using Sewer56.Update.Extractors.SevenZipSharp;
@@ -44,11 +47,12 @@ internal class Program
             with.HelpWriter = null;
         });
 
-        var parserResult = parser.ParseArguments<CreateReleaseOptions, CreateCopyPackageOptions, CreateDeltaPackageOptions, DownloadPackageOptions>(args);
+        var parserResult = parser.ParseArguments<CreateReleaseOptions, CreateCopyPackageOptions, CreateDeltaPackageOptions, DownloadPackageOptions, AutoCreateDeltaOptions>(args);
         await parserResult.WithParsedAsync<CreateReleaseOptions>(CreateRelease);
         await parserResult.WithParsedAsync<CreateCopyPackageOptions>(CreateCopyPackage);
         await parserResult.WithParsedAsync<CreateDeltaPackageOptions>(CreateDeltaPackage);
         await parserResult.WithParsedAsync<DownloadPackageOptions>(DownloadPackage);
+        await parserResult.WithParsedAsync<AutoCreateDeltaOptions>(AutoCreateDeltaOptions);
 
         parserResult.WithNotParsed(errs => HandleParseError(parserResult, errs));
     }
@@ -86,6 +90,65 @@ internal class Program
         await CreateReleaseInternal(releaseOptions, progressBar.AsProgress<double>());
     }
 
+    /// <summary>
+    /// Automatically creates delta packages.
+    /// </summary>
+    private static async Task AutoCreateDeltaOptions(AutoCreateDeltaOptions options)
+    {
+        using var progressBar = new ProgressBar(10000, "Resolving Available Versions");
+        var validator = new AutoCreateDeltaValidator();
+        validator.ValidateAndThrow(options);
+
+        // Create Output Folder
+        options.OutputPath = Path.GetFullPath(options.OutputPath);
+        Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath)!);
+
+        // Resolve Packages
+        var resolver = await SetupResolverAsync(options);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        // Download Packages
+        var slicer = new ProgressSlicer(progressBar.AsProgress<double>());
+        var resolverOptions = (IPackageResolverOptions) options;
+        var currentPackageDetails = (ICurrentPackageDetails) options;
+
+        for (int x = 0; x < options.NumReleases; x++)
+        {
+            // Setup for this item.
+            using var tempFolder = new TemporaryFolderAllocation();
+            var progressForThisItem = slicer.Slice(1.0 / options.NumReleases);
+            var slicerForThisItem = new ProgressSlicer(progressForThisItem);
+
+            // Set download package options.
+            var downloadOptions = new DownloadPackageOptions()
+            {
+                OutputPath = tempFolder.FolderPath,
+                Extract = true,
+                ReleaseIndex = (x + 1)
+            };
+
+            // Copy resolver options.
+            resolverOptions.Adapt(downloadOptions);
+
+            // Download package.
+            var maxNumReleases = options.NumReleases - 1;
+            void ReportMessage(string message) => progressBar.Message = $"[Version {x}/{maxNumReleases}] {message}";
+            var previousVersion = await SelectAndDownloadVersion(downloadOptions, slicerForThisItem.Slice(0.8), ReportMessage, resolver, versions);
+
+            // Create Delta
+            var createDeltaOptions = new CreateDeltaPackageOptions()
+            {
+                LastVersion = previousVersion,
+                LastVersionFolderPath = downloadOptions.OutputPath,
+                OutputPath = Path.Combine(options.OutputPath, $"delta-package-{x}")
+            };
+            currentPackageDetails.Adapt(createDeltaOptions);
+
+            await CreateDeltaPackageInternal(createDeltaOptions, slicerForThisItem.Slice(0.8), ReportMessage);
+            await Console.Out.WriteLineAsync(createDeltaOptions.OutputPath);
+        }
+    }
+
     private static async Task<string> DownloadPackageInternal(DownloadPackageOptions options, IProgress<double> progress, ReportProgressMessage reportMessage = null, bool writeVersionToStdout = false)
     {
         var validator = new PackageResolverOptionsValidator();
@@ -93,7 +156,13 @@ internal class Program
 
         Directory.CreateDirectory(Path.GetDirectoryName(options.OutputPath)!);
         var resolver = await SetupResolverAsync(options, reportMessage);
-        var versions = await resolver.GetPackageVersionsAsync();;
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        return await SelectAndDownloadVersion(options, progress, reportMessage, resolver, versions, writeVersionToStdout);
+    }
+
+    private static async Task<string> SelectAndDownloadVersion(IDownloadPackageOptions options, IProgress<double> progress, ReportProgressMessage reportMessage, IPackageResolver resolver, List<NuGetVersion> versions, bool writeVersionToStdout = false)
+    {
         var lastVersion = versions.Count > 0 ? versions[^(options.ReleaseIndex + 1)] : null;
         var versionString = lastVersion!.ToString();
         if (writeVersionToStdout)
@@ -114,6 +183,7 @@ internal class Program
         }
         else
         {
+            reportMessage?.Invoke("Downloading Package");
             await resolver.DownloadPackageAsync(lastVersion, options.OutputPath,
                 new ReleaseMetadataVerificationInfo()
                     { FolderPath = Path.GetDirectoryName(Path.GetFullPath(options.OutputPath))! }, progress);
@@ -122,7 +192,7 @@ internal class Program
         return versionString;
     }
 
-    private static async Task<IPackageResolver> SetupResolverAsync(IPackageResolverOptions options, ReportProgressMessage reportMessage)
+    private static async Task<IPackageResolver> SetupResolverAsync(IPackageResolverOptions options, ReportProgressMessage reportMessage = null)
     {
         var commonResolverSettings = new CommonPackageResolverSettings()
         {
@@ -153,7 +223,7 @@ internal class Program
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        reportMessage?.Invoke("Downloading Package");
+        reportMessage?.Invoke("Initializing Package Resolver");
         await resolver.InitializeAsync();
         return resolver;
     }
