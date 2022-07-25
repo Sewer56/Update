@@ -4,13 +4,16 @@ using Sewer56.Update.Tool.Options.Groups;
 namespace Sewer56.Update.Tool.Options;
 
 [Verb("AutoCreateDelta", HelpText = "Automatically downloads packages and creates deltas for the last X releases. Paths of generated packages are written to standard output/console.")]
-internal class AutoCreateDeltaOptions : IPackageResolverOptions, ICurrentPackageDetails
+internal class AutoCreateDeltaOptions : IPackageResolverOptions, ICurrentPackageDetails, IProgressBarOptions
 {
     [Option(Required = false, HelpText = "Number of previous releases to download and make deltas for.", Default = 1)]
     public int NumReleases { get; set; }
 
     [Option(Required = true, HelpText = "The folder where the generated delta packages should be saved.")]
     public string OutputPath { get; set; }
+
+    /* Progress Bar Options */
+    public bool NoProgressBar { get; set; }
 
     /* ICurrentPackageDetails */
     public string FolderPath { get; set; }

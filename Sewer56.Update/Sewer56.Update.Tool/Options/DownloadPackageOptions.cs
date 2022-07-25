@@ -7,13 +7,16 @@ namespace Sewer56.Update.Tool.Options;
 /// Options for downloading a package from the command line.
 /// </summary>
 [Verb("DownloadPackage", HelpText = "Downloads the latest package from a specified source. Version of the downloaded package is written to standard output/console.")]
-internal class DownloadPackageOptions : IDownloadPackageOptions, IPackageResolverOptions
+internal class DownloadPackageOptions : IDownloadPackageOptions, IPackageResolverOptions, IProgressBarOptions
 {
     public string OutputPath { get; set; }
 
     public bool Extract { get; set; }
 
     public int ReleaseIndex { get; set; }
+
+    /* Progress Bar Options */
+    public bool NoProgressBar { get; set; }
 
     /* Package Resolver Options */
     public string MetadataFileName { get; set; }

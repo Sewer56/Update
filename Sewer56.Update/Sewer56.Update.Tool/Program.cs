@@ -28,6 +28,7 @@ using Sewer56.Update.Resolvers.NuGet.Utilities;
 using Sewer56.Update.Structures;
 using Sewer56.Update.Tool.Options;
 using Sewer56.Update.Tool.Options.Groups;
+using Sewer56.Update.Tool.Utility;
 using Sewer56.Update.Tool.Validation;
 using ShellProgressBar;
 using IPackageResolver = Sewer56.Update.Interfaces.IPackageResolver;
@@ -59,7 +60,7 @@ internal class Program
 
     private static async Task DownloadPackage(DownloadPackageOptions options)
     {
-        using var progressBar = new ProgressBar(10000, "Downloading Package");
+        using IProgressBar progressBar = GetProgressBar(options, 10000, "Downloading Package");
         await DownloadPackageInternal(options, progressBar.AsProgress<double>(), message => progressBar.Message = message, true);
     }
 
@@ -75,10 +76,9 @@ internal class Program
 
     private static async Task CreateDeltaPackage(CreateDeltaPackageOptions options)
     {
-        using var progressBar = new ProgressBar(10000, "Downloading Package");
+        using IProgressBar progressBar = GetProgressBar(options, 10000, "Creating Delta Package");
         await CreateDeltaPackageInternal(options, progressBar.AsProgress<double>(), message => progressBar.Message = message);
     }
-
 
     /// <summary>
     /// Creates a new package.
@@ -95,7 +95,7 @@ internal class Program
     /// </summary>
     private static async Task AutoCreateDeltaOptions(AutoCreateDeltaOptions options)
     {
-        using var progressBar = new ProgressBar(10000, "Resolving Available Versions");
+        using IProgressBar progressBar = GetProgressBar(options, 10000, "Resolving Available Versions");
         var validator = new AutoCreateDeltaValidator();
         validator.ValidateAndThrow(options);
 
@@ -228,7 +228,6 @@ internal class Program
         return resolver;
     }
 
-
     private static async Task CreateDeltaPackageInternal(CreateDeltaPackageOptions options, IProgress<double> progress, ReportProgressMessage reportProgressMessage = null)
     {
         var validator = new CreateDeltaPackageValidator();
@@ -306,6 +305,14 @@ internal class Program
             }),
             _ => throw new ArgumentOutOfRangeException()
         };
+    }
+
+    private static IProgressBar GetProgressBar(IProgressBarOptions opt, int maxTicks, string message)
+    {
+        if (opt.NoProgressBar)
+            return new DummyProgressBar();
+
+        return new ProgressBar(maxTicks, message);
     }
 
     /// <summary>
