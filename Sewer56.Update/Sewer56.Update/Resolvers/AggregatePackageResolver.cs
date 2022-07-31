@@ -27,6 +27,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     public Action<GetResolverResult>? OnSuccessfulDownload;
 
     private AggregatePackageResolverItem[] _resolverItems;
+    private Dictionary<(NuGetVersion, ReleaseMetadataVerificationInfo), List<GetResolverResult>> _getResolversCache = new();
     private bool _hasAcquiredPackages;
     private bool _hasInitialised;
 
@@ -38,7 +39,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
         for (int x = 0; x < _resolverItems.Length; x++)
             _resolverItems[x].Resolver = resolvers[x];
     }
-
+    
     /// <inheritdoc />
     public async Task InitializeAsync()
     {
@@ -73,7 +74,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// <inheritdoc />
     public async Task DownloadPackageAsync(NuGetVersion version, string destFilePath, ReleaseMetadataVerificationInfo verificationInfo, IProgress<double>? progress = null, CancellationToken cancellationToken = default)
     {
-        var resolverResults = (await GetResolversForVersionAsync(version, cancellationToken));
+        var resolverResults = (await GetResolversForVersionAsync(version, verificationInfo, cancellationToken));
         bool success = false;
         var exceptions = new List<Exception>();
 
@@ -99,52 +100,58 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// <inheritdoc />
     public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
-        var resolverResults = (await GetResolversForVersionAsync(version, token));
+        var resolverResults = (await GetResolversForVersionAsync(version, verificationInfo, token));
         foreach (var result in resolverResults)
         {
-            try
-            {
-                if (result.Resolver is IPackageResolverDownloadSize downloadSizeProvider)
-                    return await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
-            }
-            catch (Exception) { /* Ignored */ }
+            if (result.HasDownloadSize)
+                return result.DownloadSize;
         }
 
         return -1;
     }
-
-    /// <summary>
-    /// Returns the update resolvers that would be used to update to a given version.
-    /// </summary>
-    /// <param name="version">The version to be used for updating.</param>
-    /// <param name="token">Token used to cancel the operation used to acquire packages (if first use).</param>
-    /// <returns>Details of the resolver used for updating.</returns>
-    [Obsolete("Provided for backwards compatibility. Use GetResolversForVersionAsync in newer applications.")]
-    public async Task<GetResolverResult> GetResolverForVersionAsync(NuGetVersion version, CancellationToken token)
-    {
-        return (await GetResolversForVersionAsync(version, token))[0];
-    }
-
+    
     /// <summary>
     /// Returns the available update resolvers that would be used to update to a given version.
     /// </summary>
     /// <param name="version">The version to be used for updating.</param>
+    /// <param name="verificationInfo">Context used to determine what kind of update packages can be applied.</param>
     /// <param name="token">Token used to cancel the operation used to acquire packages (if first use).</param>
     /// <returns>Details of the resolver used for updating.</returns>
-    public async Task<List<GetResolverResult>> GetResolversForVersionAsync(NuGetVersion version, CancellationToken token)
+    public async Task<List<GetResolverResult>> GetResolversForVersionAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token)
     {
+        // Check cache.
+        var versionVerificationTuple = (version, verificationInfo);
+        if (_getResolversCache.TryGetValue(versionVerificationTuple, out var result))
+            return result;
+
         await AcquirePackagesIfNecessaryAsync(token);
-        var result = new List<GetResolverResult>();
+        result = new List<GetResolverResult>();
         for (var x = 0; x < _resolverItems.Length; x++)
         {
             var resolver = _resolverItems[x];
             if (resolver.Versions.Find(x => x.Equals(version)) != default)
-                result.Add(new GetResolverResult(resolver.Resolver, x));
+            {
+                try
+                {
+                    if (resolver.Resolver is IPackageResolverDownloadSize downloadSize)
+                        result.Add(new GetResolverResult(resolver.Resolver, x, await downloadSize.GetDownloadFileSizeAsync(version, verificationInfo, token)));
+                    else
+                        result.Add(new GetResolverResult(resolver.Resolver, x));
+                }
+                catch (Exception)
+                {
+                    result.Add(new GetResolverResult(resolver.Resolver, x));
+                }
+            }
         }
+
+        // Sort by download size
+        result.Sort((a, b) => a.DownloadSize.CompareTo(b.DownloadSize));
 
         if (result.Count <= 0)
             throw new Exception("Resolver with a specified version was not found.");
 
+        _getResolversCache[versionVerificationTuple] = result;
         return result;
     }
 
@@ -200,11 +207,20 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// </summary>
     public struct GetResolverResult
     {
+        private const long NoDownloadSize = Int64.MaxValue;
+
         /// <summary/>
         public GetResolverResult(IPackageResolver resolver, int index)
         {
             Resolver = resolver;
             Index = index;
+            DownloadSize = NoDownloadSize;
+        }
+
+        /// <summary/>
+        public GetResolverResult(IPackageResolver resolver, int index, long downloadSize) : this(resolver, index)
+        {
+            DownloadSize = downloadSize;
         }
 
         /// <summary>
@@ -213,9 +229,19 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
         public IPackageResolver Resolver { get; internal set; }
 
         /// <summary>
+        /// Size of the package to be downloaded.
+        /// </summary>
+        public long DownloadSize { get; internal set; }
+
+        /// <summary>
         /// Index of the resolver in the originally supplied array of resolvers.
         /// </summary>
         public int Index { get; internal set; }
+
+        /// <summary>
+        /// True if download size is known, else false.
+        /// </summary>
+        public bool HasDownloadSize => DownloadSize != NoDownloadSize;
     }
 
     private struct AggregatePackageResolverItem

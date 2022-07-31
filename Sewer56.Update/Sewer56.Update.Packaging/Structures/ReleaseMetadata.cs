@@ -92,7 +92,7 @@ public class ReleaseMetadata : IJsonSerializable
 /// Information used for verifying the compatibility of e.g. Delta packages
 /// in release metadata
 /// </summary>
-public class ReleaseMetadataVerificationInfo
+public class ReleaseMetadataVerificationInfo : IEquatable<ReleaseMetadataVerificationInfo>
 {
     /// <summary>
     /// Path where the release will be extracted.
@@ -104,6 +104,24 @@ public class ReleaseMetadataVerificationInfo
     {
         ThrowHelpers.ThrowIfNullOrEmpty(FolderPath, () => new ValidationFailedException("Folder Path was Null or Empty"));
     }
+
+    // Autoimplemented by R#.
+    public bool Equals(ReleaseMetadataVerificationInfo? other)
+    {
+        if (ReferenceEquals(null, other)) return false;
+        if (ReferenceEquals(this, other)) return true;
+        return string.Equals(FolderPath, other.FolderPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != this.GetType()) return false;
+        return Equals((ReleaseMetadataVerificationInfo)obj);
+    }
+
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(FolderPath);
 }
 
 /// <summary />
