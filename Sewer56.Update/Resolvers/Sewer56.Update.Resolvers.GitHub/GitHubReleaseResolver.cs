@@ -21,7 +21,7 @@ namespace Sewer56.Update.Resolvers.GitHub;
 /// <summary>
 /// A package resolver that downloads packages from GitHub releases, with support for response caching.
 /// </summary>
-public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadSize
+public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
 {
     private GitHubClient? _client;
     private GitHubResolverConfiguration _configuration;
@@ -178,4 +178,7 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
 
         return null;
     }
+
+    /// <inheritdoc />
+    public async ValueTask<string?> GetDownloadUrlAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default) => await GetVersionDownloadUrl(version, verificationInfo);
 }

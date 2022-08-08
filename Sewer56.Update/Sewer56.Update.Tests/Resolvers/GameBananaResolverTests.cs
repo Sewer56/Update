@@ -70,8 +70,6 @@ public class GameBananaResolverTests
     [Fact]
     public async Task GetPackageVersionsAsync_CanGetFileSize()
     {
-        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
-
         // Act
         var resolver = new GameBananaUpdateResolver(ResolverConfiguration);
         await resolver.InitializeAsync();
@@ -81,6 +79,19 @@ public class GameBananaResolverTests
 
         // Assert
         Assert.True(fileSize > 0);
+    }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetFileUrl()
+    {
+        // Act
+        var resolver = new GameBananaUpdateResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+        var versions = await resolver.GetPackageVersionsAsync();
+        var downloadUrl = await resolver.GetDownloadUrlAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(!string.IsNullOrEmpty(downloadUrl));
     }
 
     [Fact]

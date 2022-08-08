@@ -14,7 +14,7 @@ namespace Sewer56.Update.Resolvers;
 /// <summary>
 /// A package resolver that supports downloading of packages from multiple sources.
 /// </summary>
-public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize
+public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
 {
     /// <summary>
     /// Number of resolvers internally in this aggregate resolver.
@@ -109,7 +109,20 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
 
         return -1;
     }
-    
+
+    /// <inheritdoc />
+    public async ValueTask<string?> GetDownloadUrlAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        var resolverResults = (await GetResolversForVersionAsync(version, verificationInfo, token));
+        foreach (var result in resolverResults)
+        {
+            if (result.DownloadUrl != null)
+                return result.DownloadUrl;
+        }
+
+        return null;
+    }
+
     /// <summary>
     /// Returns the available update resolvers that would be used to update to a given version.
     /// </summary>
@@ -133,10 +146,16 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
             {
                 try
                 {
-                    if (resolver.Resolver is IPackageResolverDownloadSize downloadSize)
-                        result.Add(new GetResolverResult(resolver.Resolver, x, await downloadSize.GetDownloadFileSizeAsync(version, verificationInfo, token)));
-                    else
-                        result.Add(new GetResolverResult(resolver.Resolver, x));
+                    long downloadSize   = GetResolverResult.NoDownloadSize;
+                    string? downloadUrl = null;
+
+                    if (resolver.Resolver is IPackageResolverDownloadSize downloadSizeResolver)
+                        downloadSize = await downloadSizeResolver.GetDownloadFileSizeAsync(version, verificationInfo, token);
+
+                    if (resolver.Resolver is IPackageResolverDownloadUrl downloadUrlResolver)
+                        downloadUrl = await downloadUrlResolver.GetDownloadUrlAsync(version, verificationInfo, token);
+
+                    result.Add(new GetResolverResult(resolver.Resolver, x, downloadSize, downloadUrl));
                 }
                 catch (Exception)
                 {
@@ -207,7 +226,7 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
     /// </summary>
     public struct GetResolverResult
     {
-        private const long NoDownloadSize = Int64.MaxValue;
+        internal const long NoDownloadSize = Int64.MaxValue;
 
         /// <summary/>
         public GetResolverResult(IPackageResolver resolver, int index)
@@ -215,12 +234,19 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
             Resolver = resolver;
             Index = index;
             DownloadSize = NoDownloadSize;
+            DownloadUrl = null;
         }
 
         /// <summary/>
         public GetResolverResult(IPackageResolver resolver, int index, long downloadSize) : this(resolver, index)
         {
             DownloadSize = downloadSize;
+        }
+
+        /// <summary/>
+        public GetResolverResult(IPackageResolver resolver, int index, long downloadSize, string? url) : this(resolver, index, downloadSize)
+        {
+            DownloadUrl = url;
         }
 
         /// <summary>
@@ -232,6 +258,11 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
         /// Size of the package to be downloaded.
         /// </summary>
         public long DownloadSize { get; internal set; }
+
+        /// <summary>
+        /// URL of the package to be downloaded.
+        /// </summary>
+        public string? DownloadUrl { get; internal set; }
 
         /// <summary>
         /// Index of the resolver in the originally supplied array of resolvers.

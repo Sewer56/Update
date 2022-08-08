@@ -86,4 +86,22 @@ public class NuGetResolverTests
         Assert.True(downloadSize > 0);
     }
 
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetDownloadUrl()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings()
+        {
+            AllowPrereleases = true
+        };
+
+        // Act
+        var resolver = new NuGetUpdateResolver(ResolverConfiguration, commonResolverSettings);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        var downloadUrl = await resolver.GetDownloadUrlAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(!string.IsNullOrEmpty(downloadUrl));
+    }
+
 }

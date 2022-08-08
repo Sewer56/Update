@@ -18,7 +18,7 @@ namespace Sewer56.Update.Resolvers.NuGet;
 /// <summary>
 /// Allows for retrieval of updates from a NuGet V3 Source.
 /// </summary>
-public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSize
+public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
 {
     private NuGetUpdateResolverSettings _resolverSettings;
     private CommonPackageResolverSettings _commonPackageResolverSettings;
@@ -55,9 +55,15 @@ public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSiz
     /// <inheritdoc />
     public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
-        var identity = new PackageIdentity(_resolverSettings.PackageId, version);
-        var result  = await _resolverSettings.NugetRepository!.GetDownloadUrlUnsafeAsync(identity, default);
-        var fileReq = WebRequest.CreateHttp(result);
+        var downloadUrl = await GetDownloadUrlAsync(version, verificationInfo, token);
+        var fileReq = WebRequest.CreateHttp(downloadUrl);
         return (await fileReq.GetResponseAsync()).ContentLength;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<string?> GetDownloadUrlAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
+    {
+        var identity = new PackageIdentity(_resolverSettings.PackageId, version);
+        return (await _resolverSettings.NugetRepository!.GetDownloadUrlUnsafeAsync(identity, token))!;
     }
 }

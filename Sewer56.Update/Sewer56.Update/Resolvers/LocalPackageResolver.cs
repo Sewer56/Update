@@ -20,7 +20,7 @@ namespace Sewer56.Update.Resolvers;
 /// Resolves packages from a local folder.
 /// Local folder must contain manifest for each package.
 /// </summary>
-public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSize
+public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
 {
     /// <summary>
     /// The local filesystem folder associated with this repository.
@@ -64,7 +64,8 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
     /// <inheritdoc />
     public Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
-        return Task.FromResult(new FileInfo(GetReleaseFilePath(version, verificationInfo)).Length);
+        var fileUrl = GetReleaseFilePath(version, verificationInfo);
+        return Task.FromResult(new FileInfo(fileUrl).Length);
     }
 
     private string GetReleaseFilePath(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo)
@@ -72,7 +73,12 @@ public class LocalPackageResolver : IPackageResolver, IPackageResolverDownloadSi
         var releaseItem = _releases!.GetRelease(version.ToString(), verificationInfo);
         if (releaseItem == null)
             throw new ArgumentException($"Unable to find Release for the specified NuGet Version `{nameof(version)}` ({version})");
-
+        
         return Path.Combine(RepositoryFolder, releaseItem.FileName);
     }
+
+    /// <inheritdoc />
+#pragma warning disable CS1998
+    public async ValueTask<string?> GetDownloadUrlAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default) => GetReleaseFilePath(version, verificationInfo);
+#pragma warning restore CS1998
 }

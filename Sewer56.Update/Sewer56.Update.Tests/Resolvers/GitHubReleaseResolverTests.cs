@@ -186,4 +186,18 @@ public class GitHubReleaseResolverTests
         // Assert
         Assert.True(fileSize > 0);
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetDownloadUrl()
+    {
+        // Act
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+
+        var versions = await resolver.GetPackageVersionsAsync();
+        var downloadUrl = await resolver.GetDownloadUrlAsync(versions[0], new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(!string.IsNullOrEmpty(downloadUrl));
+    }
 }

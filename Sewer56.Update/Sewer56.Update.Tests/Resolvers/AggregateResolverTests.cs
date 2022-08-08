@@ -132,7 +132,6 @@ public class AggregateResolverTests
     [Fact]
     public async Task DownloadPackageAsync_CanGetFileSize()
     {
-        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
         var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
 
         // Act
@@ -152,9 +151,29 @@ public class AggregateResolverTests
     }
 
     [Fact]
+    public async Task DownloadPackageAsync_CanGetDownloadUrl()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new GameBananaUpdateResolver(GameBananaConfig, commonResolverSettings),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        await resolver.InitializeAsync();
+
+        // GitHub Only Package
+        var downloadUrl = await resolver.GetDownloadUrlAsync(new NuGetVersion("3.0-pre"), new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(!string.IsNullOrEmpty(downloadUrl));
+    }
+
+    [Fact]
     public async Task DownloadPackageAsync_CanGetFileSize_IsResilientToExceptions()
     {
-        var packageFilePath = Path.Combine(PackageFolder, "Package.pkg");
         var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
 
         // Act
@@ -171,6 +190,27 @@ public class AggregateResolverTests
 
         // Assert
         Assert.True(fileSize > 0);
+    }
+
+    [Fact]
+    public async Task DownloadPackageAsync_CanGetDownloadUrl_IsResilientToExceptions()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new ExceptionPackageResolver(false, false, false, true, new List<NuGetVersion>(new []{ new NuGetVersion("3.0-pre") }), true),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        await resolver.InitializeAsync();
+
+        // GitHub Only Package
+        var downloadUrl = await resolver.GetDownloadUrlAsync(new NuGetVersion("3.0-pre"), new ReleaseMetadataVerificationInfo() { FolderPath = this.OutputFolder });
+
+        // Assert
+        Assert.True(!string.IsNullOrEmpty(downloadUrl));
     }
 
     [Fact]

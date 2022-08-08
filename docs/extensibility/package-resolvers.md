@@ -106,7 +106,9 @@ if (resolver is IPackageResolverDownloadSize downloadSizeProvider)
     fileSize = await downloadSizeProvider.GetDownloadFileSizeAsync(version, verificationInfo, token);
 ```
 
-Available Extensions:
+Available Extensions:  
+
 | Type                         | Description                                       |
 |------------------------------|---------------------------------------------------|
 | IPackageResolverDownloadSize | Returns the size of the package to be downloaded. |
+| IPackageResolverDownloadUrl  | Returns direct download URL for the package.      |
