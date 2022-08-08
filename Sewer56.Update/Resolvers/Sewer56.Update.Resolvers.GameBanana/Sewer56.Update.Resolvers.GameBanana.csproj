@@ -12,7 +12,7 @@
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.2.4</Version>
+    <Version>1.3.0</Version>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 
