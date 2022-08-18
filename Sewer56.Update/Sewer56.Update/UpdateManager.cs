@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Versioning;
@@ -15,7 +13,6 @@ using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging;
 using Sewer56.Update.Packaging.Enums;
 using Sewer56.Update.Packaging.Interfaces;
-using Sewer56.Update.Packaging.IO;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Structures;
 
@@ -33,6 +30,13 @@ public class UpdateManager<T> : IUpdateManager where T : class
     /// The extractor that was used to instantiate this UpdateManager.
     /// </summary>
     public readonly IPackageExtractor Extractor;
+
+    /// <summary>
+    /// Executed when an update to self is about to be applied (i.e. process is about to restart). 
+    /// Passed in argument contains the location of data to be copied into current program folder,
+    /// after decompression (including deltas) and right before it is applied.
+    /// </summary>
+    public event Action<string>? OnApplySelfUpdate;
 
     private Lazy<string> _storageDirPath;
     private bool _cleanupOnDispose = true;
@@ -213,6 +217,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
                 CleanupAfterUpdate = updateOptions.CleanupAfterUpdate
             };
 
+            OnApplySelfUpdate?.Invoke(packageContentDirPath!);
             var startInfo = Startup.GetProcessStartInfo(Updatee.ExecutablePath!, Updatee.BaseDirectory, packageContentDirPath, startupParams);
             Process.Start(startInfo);
             _cleanupOnDispose = false;
