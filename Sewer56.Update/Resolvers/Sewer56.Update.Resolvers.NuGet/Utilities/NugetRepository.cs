@@ -31,7 +31,6 @@ public class NugetRepository
 
     private AsyncLazy<DownloadResource> _downloadResource = null!;
     private AsyncLazy<PackageMetadataResource> _packageMetadataResource = null!;
-    private AsyncLazy<PackageSearchResource> _packageSearchResource = null!;
 
     /// <summary/>
     /// <param name="nugetSourceUrl">The source URL of a NuGet V3 Feed, e.g. https://api.nuget.org/v3/index.json</param>
@@ -43,7 +42,7 @@ public class NugetRepository
 
         _downloadResource = new AsyncLazy<DownloadResource>(async () => await _sourceRepository.GetResourceAsync<DownloadResource>());
         _packageMetadataResource = new AsyncLazy<PackageMetadataResource>(async () => await _sourceRepository.GetResourceAsync<PackageMetadataResource>());
-        _packageSearchResource = new AsyncLazy<PackageSearchResource>(async () => await _sourceRepository.GetResourceAsync<PackageSearchResource>());
+        new AsyncLazy<PackageSearchResource>(async () => await _sourceRepository.GetResourceAsync<PackageSearchResource>());
     }
 
     /// <summary>
