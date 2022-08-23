@@ -106,6 +106,8 @@ public class ReleaseMetadataVerificationInfo : IEquatable<ReleaseMetadataVerific
     }
 
     // Autoimplemented by R#.
+
+    /// <summary/>
     public bool Equals(ReleaseMetadataVerificationInfo? other)
     {
         if (ReferenceEquals(null, other)) return false;
@@ -113,6 +115,7 @@ public class ReleaseMetadataVerificationInfo : IEquatable<ReleaseMetadataVerific
         return string.Equals(FolderPath, other.FolderPath, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
@@ -121,6 +124,7 @@ public class ReleaseMetadataVerificationInfo : IEquatable<ReleaseMetadataVerific
         return Equals((ReleaseMetadataVerificationInfo)obj);
     }
 
+    /// <inheritdoc/>
     public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(FolderPath);
 }
 

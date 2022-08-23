@@ -85,7 +85,7 @@ public static class Startup
 
         var startInfo = new ProcessStartInfo
         {
-            WorkingDirectory = Path.GetDirectoryName(targetExecutablePath)
+            WorkingDirectory = Path.GetDirectoryName(targetExecutablePath)!
         };
 
         // If updatee is an .exe file - start it directly
