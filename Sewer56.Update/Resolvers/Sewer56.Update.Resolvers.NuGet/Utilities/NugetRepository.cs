@@ -18,6 +18,11 @@ namespace Sewer56.Update.Resolvers.NuGet.Utilities;
 /// </summary>
 public class NugetRepository
 {
+    /// <summary>
+    /// URL with which this repository was created with.
+    /// </summary>
+    public string SourceUrl { get; }
+
     private static NullLogger _nullLogger = new NullLogger();
     private static SourceCacheContext _sourceCacheContext = new SourceCacheContext();
 
@@ -32,6 +37,7 @@ public class NugetRepository
     /// <param name="nugetSourceUrl">The source URL of a NuGet V3 Feed, e.g. https://api.nuget.org/v3/index.json</param>
     public NugetRepository(string nugetSourceUrl)
     {
+        SourceUrl = nugetSourceUrl;
         _packageSource = new PackageSource(nugetSourceUrl);
         _sourceRepository = new SourceRepository(_packageSource, Repository.Provider.GetCoreV3());
 

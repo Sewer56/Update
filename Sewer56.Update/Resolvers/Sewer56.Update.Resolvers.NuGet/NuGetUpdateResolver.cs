@@ -35,6 +35,11 @@ public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSiz
         _commonPackageResolverSettings = commonResolverSettings;
     }
 
+    /// <summary>
+    /// Creates a copy of the NuGet resolver settings and returns them.
+    /// </summary>
+    public NuGetUpdateResolverSettings GetResolverSettings() => _resolverSettings.Clone();
+
     /// <inheritdoc />
     public async Task<List<NuGetVersion>> GetPackageVersionsAsync(CancellationToken cancellationToken = default)
     {
