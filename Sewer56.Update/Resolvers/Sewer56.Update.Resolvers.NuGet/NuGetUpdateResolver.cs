@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
@@ -65,5 +66,15 @@ public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSiz
     {
         var identity = new PackageIdentity(_resolverSettings.PackageId, version);
         return (await _resolverSettings.NugetRepository!.GetDownloadUrlUnsafeAsync(identity, token))!;
+    }
+
+    /// <summary>
+    /// Gets the full package details for a given version of the package.
+    /// </summary>
+    /// <param name="version">Version to get the details for.</param>
+    /// <param name="token">Token to cancel the fetch operation.</param>
+    public async Task<IPackageSearchMetadata?> GetPackageDetailsAsync(NuGetVersion version, CancellationToken token = default)
+    {
+        return await _resolverSettings.NugetRepository!.GetPackageDetailsAsync(new PackageIdentity(_resolverSettings.PackageId, version), token);
     }
 }

@@ -104,4 +104,22 @@ public class NuGetResolverTests
         Assert.True(!string.IsNullOrEmpty(downloadUrl));
     }
 
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetPackageDetails()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings()
+        {
+            AllowPrereleases = true
+        };
+
+        // Act
+        var resolver = new NuGetUpdateResolver(ResolverConfiguration, commonResolverSettings);
+        var versions = await resolver.GetPackageVersionsAsync();
+
+        var packageDetails = await resolver.GetPackageDetailsAsync(versions[0]);
+
+        // Assert
+        Assert.NotNull(packageDetails);
+    }
+
 }

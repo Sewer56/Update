@@ -79,6 +79,22 @@ public class NugetRepository
     }
 
     /// <summary>
+    /// Retrieves the details of an individual package.
+    /// </summary>
+    /// <param name="identity">Uniquely identifies the package.</param>
+    /// <param name="token">A cancellation token to allow cancellation of the task.</param>
+    /// <returns>Return contains an array of versions for this package.</returns>
+    public async Task<IPackageSearchMetadata?> GetPackageDetailsAsync(PackageIdentity identity, CancellationToken token = default)
+    {
+        try
+        {
+            var metadataResource = await _packageMetadataResource;
+            return await metadataResource.GetMetadataAsync(identity, _sourceCacheContext, _nullLogger, token).ConfigureAwait(false);
+        }
+        catch (Exception) { return null; }
+    }
+
+    /// <summary>
     /// [WARNING: REFLECTION]
     /// Uses reflection to get a URL to the package download.
     /// </summary>
