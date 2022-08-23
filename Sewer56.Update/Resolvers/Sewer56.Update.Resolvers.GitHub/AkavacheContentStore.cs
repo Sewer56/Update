@@ -77,7 +77,7 @@ internal class AkavacheContentStore : ICacheStore
             await observable;
             return result;
         }
-        catch (KeyNotFoundException e)
+        catch (KeyNotFoundException)
         {
             return false;
         }

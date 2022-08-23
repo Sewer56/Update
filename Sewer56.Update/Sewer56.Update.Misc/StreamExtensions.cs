@@ -53,7 +53,7 @@ public static class StreamExtensions
                 if (length == 0)
                     length = 1; // just in case.
             }
-            catch (Exception e) { supportsLength = false; }
+            catch (Exception) { supportsLength = false; }
         }
         else
         {
