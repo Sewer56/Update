@@ -200,4 +200,17 @@ public class GitHubReleaseResolverTests
         // Assert
         Assert.True(!string.IsNullOrEmpty(downloadUrl));
     }
+
+    [Fact]
+    public async Task GetPackageVersionsAsync_CanGetReleaseMetadata()
+    {
+        // Act
+        var resolver = new GitHubReleaseResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+
+        var releaseMetadata = await resolver.GetReleaseMetadataAsync(default);
+
+        // Assert
+        Assert.NotNull(releaseMetadata);
+    }
 }

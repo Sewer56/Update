@@ -13,22 +13,24 @@ using Sewer56.Update.Packaging.Structures;
 namespace Sewer56.Update.Tests.Mocks;
 
 [ExcludeFromCodeCoverage]
-internal class ExceptionPackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
+internal class ExceptionPackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl, IPackageResolverGetLatestReleaseMetadata
 {
     private readonly bool _throwOnInitialize;
     private readonly bool _throwOnGetPackageVersions;
     private readonly bool _throwOnDownloadPackage;
     private readonly bool _throwOnGetDownloadFileSize;
     private readonly bool _throwOnGetDownloadUrl;
+    private readonly bool _throwOnGetLatestReleaseMetadata;
     private readonly List<NuGetVersion> _versions = new List<NuGetVersion>();
 
-    public ExceptionPackageResolver(bool throwOnInitialize, bool throwOnGetPackageVersions, bool throwOnDownloadPackage, bool throwOnGetDownloadFileSize = false, List<NuGetVersion> versions = null, bool throwOnGetDownloadUrl = false)
+    public ExceptionPackageResolver(bool throwOnInitialize, bool throwOnGetPackageVersions, bool throwOnDownloadPackage, bool throwOnGetDownloadFileSize = false, List<NuGetVersion> versions = null, bool throwOnGetDownloadUrl = false, bool throwOnGetLatestReleaseMetadata = false)
     {
         _throwOnInitialize = throwOnInitialize;
         _throwOnGetPackageVersions = throwOnGetPackageVersions;
         _throwOnDownloadPackage = throwOnDownloadPackage;
         _throwOnGetDownloadFileSize = throwOnGetDownloadFileSize;
         _throwOnGetDownloadUrl = throwOnGetDownloadUrl;
+        _throwOnGetLatestReleaseMetadata = throwOnGetLatestReleaseMetadata;
         if (versions != null)
             _versions = versions;
     }
@@ -70,5 +72,13 @@ internal class ExceptionPackageResolver : IPackageResolver, IPackageResolverDown
             throw new NotImplementedException();
 
         return "";
+    }
+
+    public ValueTask<ReleaseMetadata> GetReleaseMetadataAsync(CancellationToken token)
+    {
+        if (_throwOnGetLatestReleaseMetadata)
+            throw new NotImplementedException();
+
+        return new ValueTask<ReleaseMetadata>((ReleaseMetadata)null);
     }
 }

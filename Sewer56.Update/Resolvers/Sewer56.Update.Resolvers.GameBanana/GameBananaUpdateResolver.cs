@@ -23,7 +23,7 @@ namespace Sewer56.Update.Resolvers.GameBanana;
 /// <summary>
 /// A package resolver that allows people to receive updates performed via gamebanana.
 /// </summary>
-public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
+public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl, IPackageResolverGetLatestReleaseMetadata
 {
     private GameBananaResolverConfiguration _configuration;
     private CommonPackageResolverSettings _commonResolverSettings;
@@ -179,5 +179,15 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
             return null;
 
         return GetVersionDownloadUrl(version, verificationInfo);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<ReleaseMetadata?> GetReleaseMetadataAsync(CancellationToken token)
+    {
+#if NET5_0_OR_GREATER
+        return ValueTask.FromResult(_releases);
+#else
+        return new ValueTask<ReleaseMetadata?>(_releases);
+#endif
     }
 }

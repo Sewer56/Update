@@ -108,7 +108,8 @@ if (resolver is IPackageResolverDownloadSize downloadSizeProvider)
 
 Available Extensions:  
 
-| Type                         | Description                                       |
-|------------------------------|---------------------------------------------------|
-| IPackageResolverDownloadSize | Returns the size of the package to be downloaded. |
-| IPackageResolverDownloadUrl  | Returns direct download URL for the package.      |
+| Type                               | Description                                       |
+|------------------------------------|---------------------------------------------------|
+| IPackageResolverDownloadSize       | Returns the size of the package to be downloaded. |
+| IPackageResolverDownloadUrl        | Returns direct download URL for the package.      |
+| IPackageResolverGetReleaseMetadata | Retrieves the release metadata file.              |

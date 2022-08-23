@@ -21,7 +21,7 @@ namespace Sewer56.Update.Resolvers.GitHub;
 /// <summary>
 /// A package resolver that downloads packages from GitHub releases, with support for response caching.
 /// </summary>
-public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
+public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl, IPackageResolverGetLatestReleaseMetadata
 {
     private GitHubClient? _client;
     private GitHubResolverConfiguration _configuration;
@@ -181,4 +181,23 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
 
     /// <inheritdoc />
     public async ValueTask<string?> GetDownloadUrlAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default) => await GetVersionDownloadUrl(version, verificationInfo);
+
+    /// <inheritdoc />
+    public async ValueTask<ReleaseMetadata?> GetReleaseMetadataAsync(CancellationToken token)
+    {
+        Release release;
+        if (_configuration.InheritVersionFromTag)
+        {
+            var releases = await _client!.Repository.Release.GetAll(_configuration.UserName, _configuration.RepositoryName);
+            release = releases.FirstOrDefault(x => new NuGetVersion(x.TagName).Equals(_versions.Last()))!;
+            if (release == null)
+                return null;
+        }
+        else
+        {
+            release = _gitHubReleaseForNonTag!;
+        }
+
+        return await TryGetReleaseMetadataAsync(release);
+    }
 }

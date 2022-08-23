@@ -14,7 +14,7 @@ namespace Sewer56.Update.Resolvers;
 /// <summary>
 /// A package resolver that supports downloading of packages from multiple sources.
 /// </summary>
-public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl
+public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownloadSize, IPackageResolverDownloadUrl, IPackageResolverGetLatestReleaseMetadata
 {
     /// <summary>
     /// Number of resolvers internally in this aggregate resolver.
@@ -118,6 +118,27 @@ public class AggregatePackageResolver : IPackageResolver, IPackageResolverDownlo
         {
             if (result.DownloadUrl != null)
                 return result.DownloadUrl;
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc />
+    public async ValueTask<ReleaseMetadata?> GetReleaseMetadataAsync(CancellationToken token)
+    {
+        var versions = await GetPackageVersionsAsync(token);
+        var resolverResults = (await GetResolversForVersionAsync(versions.Last(), new ReleaseMetadataVerificationInfo(), token));
+        foreach (var result in resolverResults)
+        {
+            try
+            {
+                if (result.Resolver is IPackageResolverGetLatestReleaseMetadata canGetMetadata)
+                    return await canGetMetadata.GetReleaseMetadataAsync(token);
+            }
+            catch (Exception)
+            {
+                // Swallow exceptions. 
+            }
         }
 
         return null;

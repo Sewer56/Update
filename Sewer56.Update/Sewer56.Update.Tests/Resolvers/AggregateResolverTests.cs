@@ -172,6 +172,27 @@ public class AggregateResolverTests
     }
 
     [Fact]
+    public async Task DownloadPackageAsync_CanGetReleaseMetadata()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new GameBananaUpdateResolver(GameBananaConfig, commonResolverSettings),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        await resolver.InitializeAsync();
+
+        // GitHub Only Package
+        var releaseMetadata = await resolver.GetReleaseMetadataAsync(default);
+
+        // Assert
+        Assert.NotNull(releaseMetadata);
+    }
+
+    [Fact]
     public async Task DownloadPackageAsync_CanGetFileSize_IsResilientToExceptions()
     {
         var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
@@ -233,5 +254,24 @@ public class AggregateResolverTests
 
         // Assert
         Assert.True(File.Exists(packageFilePath));
+    }
+
+    [Fact]
+    public async Task DownloadPackageAsync_CanGetReleaseMetadata_IsResilientToExceptions()
+    {
+        var commonResolverSettings = new CommonPackageResolverSettings() { AllowPrereleases = true };
+
+        // Act
+        var resolver = new AggregatePackageResolver(new List<IPackageResolver>()
+        {
+            new ExceptionPackageResolver(false, false, false, false, new List<NuGetVersion>(new []{ new NuGetVersion("3.0-pre") }), false, true),
+            new GitHubReleaseResolver(GitHubConfig, commonResolverSettings),
+        });
+
+        await resolver.InitializeAsync();
+
+        // GitHub Only Package
+        // Should not throw.
+        await resolver.GetReleaseMetadataAsync(default);
     }
 }

@@ -95,6 +95,18 @@ public class GameBananaResolverTests
     }
 
     [Fact]
+    public async Task GetPackageVersionsAsync_CanGetReleaseMetadata()
+    {
+        // Act
+        var resolver = new GameBananaUpdateResolver(ResolverConfiguration);
+        await resolver.InitializeAsync();
+        var releaseMetadata = await resolver.GetReleaseMetadataAsync(default);
+
+        // Assert
+        Assert.NotNull(releaseMetadata);
+    }
+
+    [Fact]
     public async Task GetPackageVersionsAsync_SupportsBrotli()
     {
         var commonResolverSettings = new CommonPackageResolverSettings()
