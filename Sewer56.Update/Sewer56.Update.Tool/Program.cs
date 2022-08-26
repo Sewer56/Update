@@ -151,6 +151,8 @@ internal class Program
 
     private static async Task<string> DownloadPackageInternal(DownloadPackageOptions options, IProgress<double> progress, ReportProgressMessage reportMessage = null, bool writeVersionToStdout = false)
     {
+        options.OutputPath = Path.GetFullPath(options.OutputPath);
+
         var validator = new PackageResolverOptionsValidator();
         validator.ValidateAndThrow(options);
 
