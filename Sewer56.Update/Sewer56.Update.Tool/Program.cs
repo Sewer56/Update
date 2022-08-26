@@ -124,7 +124,7 @@ internal class Program
             {
                 OutputPath = tempFolder.FolderPath,
                 Extract = true,
-                ReleaseIndex = (x + 1)
+                ReleaseIndex = x
             };
 
             // Copy resolver options.
