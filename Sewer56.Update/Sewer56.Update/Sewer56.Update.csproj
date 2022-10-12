@@ -10,7 +10,6 @@
 This library holds the core logic for checking updates, downloading them and applying them.
 
 This framework is a hard fork of Onova.</Description>
-    <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/Sewer56/Update</PackageProjectUrl>
     <PackageIcon>Merge.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -20,7 +19,7 @@ This framework is a hard fork of Onova.</Description>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Sewer56, Tyrrrz</Authors>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>3.3.0</Version>
+    <Version>4.0.0</Version>
     <IsTrimmable>true</IsTrimmable>
   </PropertyGroup>
 

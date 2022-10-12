@@ -203,7 +203,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
             if (metadata.Type == PackageType.Delta)
             {
                 using var tempDirectoryAlloc = new TemporaryFolderAllocation();
-                metadata.Apply(tempDirectoryAlloc.FolderPath, null, Updatee.BaseDirectory);
+                metadata.Apply(tempDirectoryAlloc.FolderPath, null, Updatee.BaseDirectory, true, updateOptions.CaseInsensitiveCleanup);
                 IOEx.MoveDirectory(tempDirectoryAlloc.FolderPath, metadata.FolderPath);
             }
 
@@ -214,7 +214,8 @@ public class UpdateManager<T> : IUpdateManager where T : class
                 StartupApplication = outOfProcessOptions.Restart ? Updatee.ExecutablePath! : "",
                 StartupApplicationArgs = outOfProcessOptions.Restart ? outOfProcessOptions.RestartArguments : "",
                 TargetDirectory = Updatee.BaseDirectory,
-                CleanupAfterUpdate = updateOptions.CleanupAfterUpdate
+                CleanupAfterUpdate = updateOptions.CleanupAfterUpdate,
+                CaseInsensitiveCleanup = updateOptions.CaseInsensitiveCleanup
             };
 
             OnApplySelfUpdate?.Invoke(packageContentDirPath!);
@@ -229,7 +230,7 @@ public class UpdateManager<T> : IUpdateManager where T : class
             throw new FileInUseException(Updatee.ExecutablePath!);
 
         // Parse out the package contents.
-        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath, Updatee.BaseDirectory, updateOptions.CleanupAfterUpdate);
+        metadata.Apply(Updatee.BaseDirectory, metadata.FolderPath, Updatee.BaseDirectory, updateOptions.CleanupAfterUpdate, updateOptions.CaseInsensitiveCleanup);
         return false;
     }
 
@@ -271,4 +272,9 @@ public class UpdateOptions
     /// True if old version files should be cleaned up (removed) after an update, else false.
     /// </summary>
     public bool CleanupAfterUpdate = true;
+    
+    /// <summary>
+    /// Performs cleanup in a case insensitive manner.
+    /// </summary>
+    public bool CaseInsensitiveCleanup = true;
 }

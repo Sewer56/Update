@@ -58,7 +58,7 @@ public static class Startup
         if (startupParams.CleanupAfterUpdate)
         {
             var metadata = Task.Run(() => Package<Empty>.ReadOrCreateLegacyMetadataFromDirectoryAsync(startupParams.PackageContentPath)).Result;
-            metadata.Cleanup(startupParams.TargetDirectory);
+            metadata.Cleanup(startupParams.TargetDirectory, startupParams.CaseInsensitiveCleanup);
         }
 
         IOEx.TryDeleteDirectory(startupParams.PackageContentPath);
@@ -147,4 +147,9 @@ internal class StartupParams
     /// True if old version files should be cleaned up (removed) after an update, else false.
     /// </summary>
     public bool CleanupAfterUpdate { get; set; } = true;
+    
+    /// <summary>
+    /// Performs cleanup in a case insensitive manner.
+    /// </summary>
+    public bool CaseInsensitiveCleanup { get; set; } = true;
 }

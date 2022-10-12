@@ -120,7 +120,9 @@ public class PackageMetadata : IJsonSerializable
     /// <param name="cleanupAfterUpdate">
     ///     If true (default) removes redundant files after updating.
     /// </param>
-    public void Apply(string targetDirectory, string? sourceDirectory = null, string? deltaSourceDirectory = null, bool cleanupAfterUpdate = true)
+    /// <param name="caseInsensitiveCleanup">Do cleanup in a case insensitive manner.</param>
+    public void Apply(string targetDirectory, string? sourceDirectory = null, string? deltaSourceDirectory = null,
+        bool cleanupAfterUpdate = true, bool caseInsensitiveCleanup = true)
     {
         sourceDirectory ??= FolderPath;
         deltaSourceDirectory ??= targetDirectory;
@@ -142,19 +144,22 @@ public class PackageMetadata : IJsonSerializable
 
         // Cleanup.
         if (cleanupAfterUpdate)
-            Cleanup(targetDirectory);
+            Cleanup(targetDirectory, caseInsensitiveCleanup);
     }
 
     /// <summary>
     /// Cleans up a folder (removes files not in list) based on the file list in the package metadata.
     /// </summary>
     /// <param name="targetDirectory">The directory to be cleaned up.</param>
-    public void Cleanup(string targetDirectory)
+    /// <param name="caseInsensitive">If true, the cleanup is case insensitive.</param>
+    public void Cleanup(string targetDirectory, bool caseInsensitive)
     {
         if (Hashes != null)
         {
-            var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => new Regex(x));  // Delete if not match 
-            var compiledIncludeRegexes = IncludeRegexes?.Select(x => new Regex(x)); // Delete if match.
+            // Delete if not match 
+            var compiledIgnoreRegexes  = IgnoreRegexes?.Select(x => caseInsensitive ? new Regex(x, RegexOptions.IgnoreCase) : new Regex(x));
+            // Delete if match.
+            var compiledIncludeRegexes = IncludeRegexes?.Select(x => caseInsensitive ? new Regex(x, RegexOptions.IgnoreCase) : new Regex(x)); 
 
             HashSet.Cleanup(Hashes, targetDirectory, path => !(path.TryMatchAnyRegex(compiledIgnoreRegexes) && !path.TryMatchAnyRegex(compiledIncludeRegexes)));
             DeleteEmptyDirs(targetDirectory);
