@@ -41,6 +41,8 @@ public static class GameBananaUtilities
         if (replaceDot)
             noExtension = noExtension.Replace('.', '_');
         
+        // GB requires replacing spaces with underscores.
+        noExtension = noExtension.Replace(' ', '_');
         var extension   = Path.GetExtension(fileName);
         var replaced    = GbFileNameRegex.Replace(noExtension, "");
 
