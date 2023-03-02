@@ -75,7 +75,7 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
             }
             else
             {
-                _gitHubReleaseForNonTag = releasesEnumerable.OrderBy(x => new NuGetVersion(x.TagName)).Last();
+                _gitHubReleaseForNonTag = releasesEnumerable.OrderByDescending(x => x.PublishedAt).First();
                 _releaseMetadataForNonTag = await TryGetReleaseMetadataAsync(_gitHubReleaseForNonTag);
                 if (_releaseMetadataForNonTag != null)
                     _versions = _releaseMetadataForNonTag.GetNuGetVersionsFromReleaseMetadata(_commonResolverSettings.AllowPrereleases);
