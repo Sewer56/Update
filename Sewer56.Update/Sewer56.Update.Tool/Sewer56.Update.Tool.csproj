@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
-    <PackageReference Include="FluentValidation" Version="10.3.4" />
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="FluentValidation" Version="11.9.2" />
     <PackageReference Include="Mapster" Version="7.3.0" />
-    <PackageReference Include="ShellProgressBar" Version="5.1.0" />
+    <PackageReference Include="ShellProgressBar" Version="5.2.0" />
   </ItemGroup>
 
   <ItemGroup>

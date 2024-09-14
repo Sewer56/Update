@@ -12,13 +12,12 @@
     <RepositoryUrl>https://github.com/Sewer56/Update</RepositoryUrl>
     <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Packaging" Version="6.3.1" />
-    <PackageReference Include="NuGet.Packaging.Core" Version="6.3.1" />
-    <PackageReference Include="NuGet.Protocol" Version="6.3.1" />
+    <PackageReference Include="NuGet.Packaging" Version="6.11.0" />
+    <PackageReference Include="NuGet.Protocol" Version="6.7.1" />
   </ItemGroup>
 
   <ItemGroup>
