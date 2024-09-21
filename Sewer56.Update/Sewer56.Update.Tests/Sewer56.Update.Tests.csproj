@@ -7,14 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.3.3" />
-    <PackageReference Include="FluentAssertions" Version="6.1.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
-    <PackageReference Include="Polly" Version="7.2.2" />
-    <PackageReference Include="xunit" Version="2.4.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+	  <PackageReference Include="CliWrap" Version="3.3.3" />
+	  <PackageReference Include="FluentAssertions" Version="6.1.0" />
+	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+	  <PackageReference Include="Mono.Cecil" Version="0.11.4" />
+	  <PackageReference Include="Polly" Version="7.2.2" />
+	  <PackageReference Include="xunit" Version="2.4.0" />
+	  <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
+	  <PackageReference Include="coverlet.collector" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
