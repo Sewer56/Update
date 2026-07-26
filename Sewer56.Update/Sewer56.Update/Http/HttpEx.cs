@@ -59,12 +59,20 @@ public static class HttpEx
     /// <returns>The size of the resource in bytes, or <c>-1</c> if it could not be determined.</returns>
     public static async Task<long> GetContentLengthAsync(Uri url, CancellationToken token = default)
     {
+        // HttpWebRequest.Timeout only bounds synchronous GetResponse; GetResponseAsync (built on
+        // BeginGetResponse) ignores it and would otherwise hang for the 100s default. Link the caller
+        // token with a probe-timeout token and wire Abort to the linked token so the in-flight
+        // request is torn down whichever fires first.
+        using var probeCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+        probeCts.CancelAfter(ProbeTimeoutMilliseconds);
+        var probeToken = probeCts.Token;
+
         // Strategy 1: HEAD request.
         try
         {
             var headReq = CreateProbeRequest(url);
             headReq.Method = "HEAD";
-            using var reg = token.Register(() => { try { headReq.Abort(); } catch { /* ignored */ } });
+            using var reg = probeToken.Register(() => { try { headReq.Abort(); } catch { /* ignored */ } });
             var headResp = (HttpWebResponse)await headReq.GetResponseAsync().ConfigureAwait(false);
             using (headResp)
             {
@@ -86,7 +94,7 @@ public static class HttpEx
         {
             var rangeReq = CreateProbeRequest(url);
             rangeReq.AddRange(0, 0);
-            using var reg2 = token.Register(() => { try { rangeReq.Abort(); } catch { /* ignored */ } });
+            using var reg2 = probeToken.Register(() => { try { rangeReq.Abort(); } catch { /* ignored */ } });
             var rangeResp = (HttpWebResponse)await rangeReq.GetResponseAsync().ConfigureAwait(false);
             using (rangeResp)
             {
