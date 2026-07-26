@@ -4,6 +4,7 @@ using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Sewer56.Update.Http;
 
 #if NET5_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
@@ -40,6 +41,7 @@ public class GameBananaItem
         try
         {
             using var client = new WebClient();
+            client.Headers[HttpRequestHeader.UserAgent] = HttpEx.ApplicationUserAgent;
             string uriString = $"https://api.gamebanana.com/Core/Item/Data?" +
                                $"itemtype={itemType}" +
                                $"&itemid={itemId}" +

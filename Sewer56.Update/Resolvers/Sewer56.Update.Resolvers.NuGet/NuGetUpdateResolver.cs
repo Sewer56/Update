@@ -10,6 +10,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
+using Sewer56.Update.Http;
 using Sewer56.Update.Misc;
 using Sewer56.Update.Packaging.Structures;
 using Sewer56.Update.Structures;
@@ -62,8 +63,10 @@ public class NuGetUpdateResolver : IPackageResolver, IPackageResolverDownloadSiz
     public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
         var downloadUrl = await GetDownloadUrlAsync(version, verificationInfo, token);
-        var fileReq = WebRequest.CreateHttp(downloadUrl);
-        return (await fileReq.GetResponseAsync()).ContentLength;
+        if (string.IsNullOrEmpty(downloadUrl))
+            return -1;
+
+        return await HttpEx.GetContentLengthAsync(new Uri(downloadUrl), token).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

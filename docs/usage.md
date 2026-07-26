@@ -20,6 +20,9 @@ Note: *This is only required when performing updates on the application you are 
 ### Simple Example
 
 ```csharp
+// Set the User-Agent used on all library HTTP requests (do this once at startup).
+HttpEx.ApplicationUserAgent = "MyApp/1.0.0";
+
 // Create an update manager that updates from filesystem `LocalPackageResolver` and stores packages as zips `ZipPackageExtractor`.
 using var manager = await UpdateManager<Empty>.CreateAsync(updatee, new LocalPackageResolver("c:\\test\\release"), new ZipPackageExtractor());
 
