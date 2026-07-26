@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using NuGet.Versioning;
 using Octokit;
 using Sewer56.Update.Extensions;
+using Sewer56.Update.Http;
 using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
@@ -94,6 +95,7 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
 
         // Create a WebRequest to get the file & create a response. 
         var fileReq  = WebRequest.CreateHttp(downloadUrl);
+        HttpEx.ApplyUserAgent(fileReq);
         var fileResp = await fileReq.GetResponseAsync();
         await using var responseStream = fileResp.GetResponseStream();
         await using var targetFile = File.Open(destFilePath, System.IO.FileMode.Create);
@@ -104,8 +106,7 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
     public async Task<long> GetDownloadFileSizeAsync(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo, CancellationToken token = default)
     {
         var url = await GetVersionDownloadUrl(version, verificationInfo);
-        var fileReq = WebRequest.CreateHttp(url);
-        return (await fileReq.GetResponseAsync()).ContentLength;
+        return await HttpEx.GetContentLengthAsync(new Uri(url), token).ConfigureAwait(false);
     }
 
     private async Task<string> GetVersionDownloadUrl(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo)
@@ -171,6 +172,7 @@ public class GitHubReleaseResolver : IPackageResolver, IPackageResolverDownloadS
         if (releaseMetadataAsset != null)
         {
             using var webClient = new WebClient();
+            webClient.Headers[HttpRequestHeader.UserAgent] = HttpEx.ApplicationUserAgent;
             var compressionScheme = JsonCompressionExtensions.GetCompressionFromFileName(releaseMetadataAsset.Name);
             var releaseMetadataBytes = await webClient.DownloadDataTaskAsync(releaseMetadataAsset.BrowserDownloadUrl);
             return await Singleton<ReleaseMetadata>.Instance.ReadFromDataAsync(releaseMetadataBytes, compressionScheme);

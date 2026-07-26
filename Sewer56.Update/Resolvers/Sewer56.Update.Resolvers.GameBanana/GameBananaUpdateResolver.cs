@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Versioning;
 using Sewer56.Update.Extensions;
+using Sewer56.Update.Http;
 using Sewer56.Update.Interfaces;
 using Sewer56.Update.Interfaces.Extensions;
 using Sewer56.Update.Misc;
@@ -63,6 +64,7 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
             return;
 
         using var client = new WebClient();
+        client.Headers[HttpRequestHeader.UserAgent] = HttpEx.ApplicationUserAgent;
         var bytes = await client.DownloadDataTaskAsync(metadataFile.DownloadUrl);
         if (isZip)
         {
@@ -97,6 +99,7 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
 
         //Create a WebRequest to get the file & create a response. 
         var fileReq  = WebRequest.CreateHttp(downloadUrl);
+        HttpEx.ApplyUserAgent(fileReq);
         var fileResp = await fileReq.GetResponseAsync();
         await using var responseStream = fileResp.GetResponseStream();
         await using var targetFile = File.Open(destFilePath, System.IO.FileMode.Create);
@@ -110,8 +113,10 @@ public class GameBananaUpdateResolver : IPackageResolver, IPackageResolverDownlo
             return -1;
 
         var url = GetVersionDownloadUrl(version, verificationInfo);
-        var fileReq = WebRequest.CreateHttp(url);
-        return (await fileReq.GetResponseAsync()).ContentLength;
+        if (string.IsNullOrEmpty(url))
+            return -1;
+
+        return await HttpEx.GetContentLengthAsync(new Uri(url), token).ConfigureAwait(false);
     }
 
     private string GetVersionDownloadUrl(NuGetVersion version, ReleaseMetadataVerificationInfo verificationInfo)
