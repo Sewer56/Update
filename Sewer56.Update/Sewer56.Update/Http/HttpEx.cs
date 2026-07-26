@@ -12,8 +12,12 @@ public static class HttpEx
 {
     /// <summary>
     /// User-Agent string used by the library when no application-wide User-Agent is configured.
+    ///
+    /// Derived from this assembly's version (set by <c>&lt;Version&gt;</c> in
+    /// <c>Sewer56.Update.csproj</c>), so it stays in sync automatically across releases.
     /// </summary>
-    public const string DefaultUserAgent = "Sewer56.Update/4.1.0";
+    public static readonly string DefaultUserAgent =
+        $"Sewer56.Update/{typeof(HttpEx).Assembly.GetName().Version}";
 
     private static string _applicationUserAgent = DefaultUserAgent;
 
